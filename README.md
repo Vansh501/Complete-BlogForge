@@ -162,16 +162,30 @@ Glassmorphic FAQ modal accessible directly from the navbar with high-contrast gl
 
 ---
 
-### 8. Admin Control Center & Analytics Dashboard
-Comprehensive administrative control panel to manage posts, categories, banners, user feedback messages, and team profiles.
+### 8. Account Security & Permanent Account Deletion (Danger Zone)
+Manage account passwords with interactive visibility toggles and perform safe cascading account self-deletion through a glassmorphic warning modal.
 
 <!-- ========================================== -->
-<!-- 📸 SCREENSHOT SLOT 8: ADMIN DASHBOARD -->
+<!-- 📸 SCREENSHOT SLOT 8: ACCOUNT SECURITY & DANGER ZONE -->
 <!-- ========================================== -->
 <p align="center">
-  <img src="docs/screenshots/admin_dashboard.png" alt="Admin Control Center" width="800" style="border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);"/>
+  <img src="docs/screenshots/account_security.png" alt="Account Security and Danger Zone" width="800" style="border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);"/>
   <br/>
-  <sub><b>Admin Control Center</b> — Platform metrics overview, category taxonomy editor, and banner manager.</sub>
+  <sub><b>Account Security</b> — Password eye toggles, credential updates, and permanent account self-deletion modal.</sub>
+</p>
+
+---
+
+### 9. Dynamic Article Feed, Real-Time Search & Category Taxonomy
+Interactive article stream with keyword search, newsletter subscriptions, categorized post counters, and popular tag clouds.
+
+<!-- ========================================== -->
+<!-- 📸 SCREENSHOT SLOT 9: ARTICLE FEED & TAXONOMY -->
+<!-- ========================================== -->
+<p align="center">
+  <img src="docs/screenshots/dashboard_feed.png" alt="Dynamic Feed and Taxonomy Sidebar" width="800" style="border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);"/>
+  <br/>
+  <sub><b>Article Stream</b> — Live search query filtering, responsive article cards, and category/tag navigation sidebar.</sub>
 </p>
 
 ---

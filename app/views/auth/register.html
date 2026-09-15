@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center py-4" style="min-height: calc(100vh - 180px);">
+    <div class="col-md-7 col-lg-6">
+        <div class="glass-card p-5 fade-in">
+            <div class="text-center mb-4">
+                <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle mb-3" style="width: 60px; height: 60px;">
+                    <i class="bi bi-person-plus-fill fs-2 text-primary"></i>
+                </div>
+                <h2 class="mb-1 text-white">Create Account</h2>
+                <p class="text-muted small">Join us and start sharing your thoughts with the world</p>
+            </div>
+            
+            <form action="{{ url_for('auth.register') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="row">
+                    <!-- Username Field -->
+                    <div class="col-md-6 mb-3">
+                        <label for="username" class="form-label text-secondary small">Username *</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-secondary" style="border-right: none;">
+                                <i class="bi bi-person-fill"></i>
+                            </span>
+                            <input type="text" class="form-control form-glass" style="border-left: none;" id="username" name="username" placeholder="johndoe" required>
+                        </div>
+                    </div>
+                    
+                    <!-- Email Field -->
+                    <div class="col-md-6 mb-3">
+                        <label for="email" class="form-label text-secondary small">Email Address *</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-secondary" style="border-right: none;">
+                                <i class="bi bi-envelope-fill"></i>
+                            </span>
+                            <input type="email" class="form-control form-glass" style="border-left: none;" id="email" name="email" placeholder="john@example.com" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Password Field -->
+                    <div class="col-md-6 mb-3">
+                        <label for="password" class="form-label text-secondary small">Password *</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-secondary" style="border-right: none;">
+                                <i class="bi bi-key-fill"></i>
+                            </span>
+                            <input type="password" class="form-control form-glass" style="border-left: none; border-right: none;" id="password" name="password" placeholder="Min 6 characters" required>
+                            <span class="input-group-text bg-dark border-secondary text-secondary" style="border-left: none; cursor: pointer; transition: all 0.2s;" id="togglePassword">
+                                <i class="bi bi-eye-slash-fill" id="togglePasswordIcon"></i>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Confirm Password Field -->
+                    <div class="col-md-6 mb-3">
+                        <label for="confirm_password" class="form-label text-secondary small">Confirm Password *</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-secondary" style="border-right: none;">
+                                <i class="bi bi-key-fill"></i>
+                            </span>
+                            <input type="password" class="form-control form-glass" style="border-left: none; border-right: none;" id="confirm_password" name="confirm_password" placeholder="Repeat password" required>
+                            <span class="input-group-text bg-dark border-secondary text-secondary" style="border-left: none; cursor: pointer; transition: all 0.2s;" id="toggleConfirmPassword">
+                                <i class="bi bi-eye-slash-fill" id="toggleConfirmPasswordIcon"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="border-secondary my-4">
+
+                <!-- Profile Bio -->
+                <div class="mb-3">
+                    <label for="bio" class="form-label text-secondary small">Short Bio (Optional)</label>
+                    <textarea class="form-control form-glass" id="bio" name="bio" rows="2" placeholder="Tell us a little about yourself..."></textarea>
+                </div>
+
+                <!-- Custom Avatar URL -->
+                <div class="mb-4">
+                    <label for="avatar_url" class="form-label text-secondary small">Avatar Image URL (Optional)</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-dark border-secondary text-secondary" style="border-right: none;">
+                            <i class="bi bi-image-fill"></i>
+                        </span>
+                        <input type="url" class="form-control form-glass" style="border-left: none;" id="avatar_url" name="avatar_url" placeholder="https://example.com/avatar.jpg">
+                    </div>
+                    <div class="form-text text-muted" style="font-size: 0.75rem;">If empty, a cool robot avatar will be auto-generated.</div>
+                </div>
+                
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-premium w-100 py-2.5 mb-3">
+                    <i class="bi bi-person-check-fill me-1"></i> Register Account
+                </button>
+            </form>
+            
+            <div class="text-center mt-2">
+                <span class="text-secondary small">Already have an account? </span>
+                <a href="{{ url_for('auth.login') }}" class="text-decoration-none small text-primary fw-semibold">Sign In</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Toggle Main Password
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+        const icon = document.getElementById('togglePasswordIcon');
+        
+        if (togglePassword && passwordInput && icon) {
+            togglePassword.addEventListener('click', () => {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                
+                if (type === 'password') {
+                    icon.classList.remove('bi-eye-fill');
+                    icon.classList.add('bi-eye-slash-fill');
+                    icon.style.color = '';
+                } else {
+                    icon.classList.remove('bi-eye-slash-fill');
+                    icon.classList.add('bi-eye-fill');
+                    icon.style.color = 'var(--accent-cyan)';
+                }
+            });
+        }
+        
+        // Toggle Confirm Password
+        const toggleConfirm = document.getElementById('toggleConfirmPassword');
+        const confirmInput = document.getElementById('confirm_password');
+        const confirmIcon = document.getElementById('toggleConfirmPasswordIcon');
+        
+        if (toggleConfirm && confirmInput && confirmIcon) {
+            toggleConfirm.addEventListener('click', () => {
+                const type = confirmInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                confirmInput.setAttribute('type', type);
+                
+                if (type === 'password') {
+                    confirmIcon.classList.remove('bi-eye-fill');
+                    confirmIcon.classList.add('bi-eye-slash-fill');
+                    confirmIcon.style.color = '';
+                } else {
+                    confirmIcon.classList.remove('bi-eye-slash-fill');
+                    confirmIcon.classList.add('bi-eye-fill');
+                    confirmIcon.style.color = 'var(--accent-cyan)';
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

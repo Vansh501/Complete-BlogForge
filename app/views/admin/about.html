@@ -1,0 +1,111 @@
+{% extends "admin/base.html" %}
+
+{% block admin_content %}
+<div class="row g-4">
+    <!-- About Page Text Settings Form -->
+    <div class="col-lg-6">
+        <div class="glass-card p-4">
+            <h5 class="text-white mb-4 fw-bold"><i class="bi bi-info-circle text-primary me-2"></i>Edit About Page Content</h5>
+            
+            <form action="{{ url_for('admin.manage_about') }}" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                    <label for="title" class="form-label text-secondary small fw-semibold">Heading Title *</label>
+                    <input type="text" class="form-control form-glass text-white" id="title" name="title" value="{{ about.title }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="description" class="form-label text-secondary small fw-semibold">Main Description *</label>
+                    <textarea class="form-control form-glass text-white" id="description" name="description" rows="5" required>{{ about.description }}</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-secondary small fw-semibold d-block">Current Cover Image</label>
+                    {% if about.image_url %}
+                        <img src="{{ about.image_url }}" alt="About Cover" class="rounded mb-2" style="width: 140px; height: 80px; object-fit: cover; border: 1px solid var(--border-color);">
+                    {% else %}
+                        <span class="text-muted small d-block mb-2">No cover image set.</span>
+                    {% endif %}
+                    <label for="about_image_file" class="form-label text-secondary small fw-semibold d-block">Upload New Cover Image (Optional)</label>
+                    <input type="file" class="form-control form-glass text-white" id="about_image_file" name="about_image_file" accept="image/*">
+                </div>
+
+                <div class="mb-3">
+                    <label for="mission" class="form-label text-secondary small fw-semibold">Our Mission Statement *</label>
+                    <textarea class="form-control form-glass text-white" id="mission" name="mission" rows="3" required>{{ about.mission }}</textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label for="vision" class="form-label text-secondary small fw-semibold">Our Vision Statement *</label>
+                    <textarea class="form-control form-glass text-white" id="vision" name="vision" rows="3" required>{{ about.vision }}</textarea>
+                </div>
+
+                <button type="submit" class="btn btn-premium w-100 py-2.5">
+                    <i class="bi bi-save-fill me-1"></i> Update Page Settings
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Team Members List Manager -->
+    <div class="col-lg-6">
+        <div class="glass-card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="text-white mb-0 fw-bold"><i class="bi bi-people text-primary me-2"></i>Team Members</h5>
+                <a href="{{ url_for('admin.add_team_member') }}" class="btn btn-sm btn-premium px-3 py-2">
+                    <i class="bi bi-person-plus-fill me-1"></i> Add Member
+                </a>
+            </div>
+
+            {% if team_members %}
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover table-borderless align-middle mb-0" style="background: transparent;">
+                        <thead>
+                            <tr class="text-secondary border-bottom border-secondary border-opacity-25" style="font-size: 0.85rem;">
+                                <th scope="col">Member Info</th>
+                                <th scope="col">Order</th>
+                                <th scope="col" class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for member in team_members %}
+                                <tr class="border-bottom border-secondary border-opacity-10">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if member.avatar %}
+                                                <img src="{{ member.avatar }}" alt="{{ member.name }}" class="rounded-circle me-3" style="width: 42px; height: 42px; object-fit: cover; border: 1px solid rgba(255,255,255,0.05);">
+                                            {% else %}
+                                                <div class="rounded-circle me-3 bg-secondary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 42px; height: 42px; font-size: 0.8rem;">
+                                                    {{ member.name[0] | upper }}
+                                                </div>
+                                            {% endif %}
+                                            <div>
+                                                <h6 class="text-white fw-semibold mb-0" style="font-size: 0.9rem;">{{ member.name }}</h6>
+                                                <span class="text-primary small d-block" style="font-size: 0.72rem;">{{ member.role }}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-muted">{{ member.display_order }}</td>
+                                    <td class="text-end">
+                                        <a href="{{ url_for('admin.edit_team_member', id=member.id) }}" class="btn btn-sm btn-outline-premium px-3 py-1.5 me-1">
+                                            <i class="bi bi-pencil-fill"></i> Edit
+                                        </a>
+                                        <form action="{{ url_for('admin.delete_team_member', id=member.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this team member?');" style="display: inline-block;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="submit" class="btn btn-sm btn-danger px-3 py-1.5" style="border-radius: 8px;">
+                                                <i class="bi bi-trash-fill"></i> Delete
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted small mb-0">No team members added yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

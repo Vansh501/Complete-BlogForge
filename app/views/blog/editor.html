@@ -1,0 +1,1083 @@
+{% extends "base.html" %}
+
+{% block title %}{% if post %}Edit "{{ post.title }}"{% else %}Write New Post{% endif %}{% endblock %}
+
+{% block extra_css %}
+<!-- Quill CSS -->
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
+<style>
+    /* Quill Theme Overrides for Dark Theme Integration */
+    .ql-toolbar.ql-snow {
+        background: rgba(15, 23, 42, 0.8) !important;
+        border: 1px solid var(--border-color) !important;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+    }
+    .ql-container.ql-snow {
+        background: rgba(15, 23, 42, 0.6) !important;
+        border: 1px solid var(--border-color) !important;
+        border-bottom-left-radius: 10px;
+        border-bottom-right-radius: 10px;
+        color: var(--text-primary);
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        font-size: 1rem;
+    }
+    .ql-editor {
+        min-height: 380px;
+        color: var(--text-primary);
+        font-size: 1.05rem;
+        line-height: 1.7;
+    }
+    .ql-editor.ql-blank::before {
+        color: #4b5563 !important;
+        font-style: normal;
+    }
+    .ql-snow .ql-stroke {
+        stroke: var(--text-secondary) !important;
+    }
+    .ql-snow .ql-fill {
+        fill: var(--text-secondary) !important;
+    }
+    .ql-snow .ql-picker {
+        color: var(--text-secondary) !important;
+    }
+    .ql-snow .ql-picker-options {
+        background-color: var(--bg-dark) !important;
+        border-color: var(--border-color) !important;
+    }
+    
+    /* Clickable Title Generator Suggestions */
+    .title-suggestion-item {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        color: var(--text-primary);
+        transition: var(--transition-smooth);
+        cursor: pointer;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        margin-bottom: 0.5rem;
+    }
+    .title-suggestion-item:hover {
+        background: rgba(99, 102, 241, 0.15);
+        border-color: var(--accent-indigo);
+    }
+
+    /* AI Tip Rotation styling */
+    .ai-tip-item {
+        opacity: 0;
+        transform: translateY(15px);
+        transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        visibility: hidden;
+    }
+    .ai-tip-item.active {
+        opacity: 1;
+        transform: translateY(0);
+        visibility: visible;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Back to Feed link -->
+    <div class="col-12 fade-in mb-3">
+        <a href="{% if post %}{{ url_for('blog.post_detail', slug=post.slug) }}{% else %}{{ url_for('blog.index') }}{% endif %}" class="text-decoration-none text-secondary small d-inline-flex align-items-center hover-white">
+            <i class="bi bi-arrow-left me-2"></i> Discard & Return
+        </a>
+    </div>
+
+    <!-- Main Editor Column -->
+    <div class="col-lg-8 mb-4 fade-in">
+        <div class="glass-card p-5">
+            <h2 class="text-white mb-4">{% if post %}<i class="bi bi-pencil-square me-2 text-primary"></i>Edit Article{% else %}<i class="bi bi-journal-plus me-2 text-primary"></i>Write New Article{% endif %}</h2>
+            
+            <form id="editor-form" action="{% if post %}{{ url_for('blog.edit_post', id=post.id) }}{% else %}{{ url_for('blog.create_post') }}{% endif %}" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <!-- Title Field -->
+                <div class="mb-4">
+                    <label for="title" class="form-label text-secondary small fw-semibold">Post Title *</label>
+                    <input type="text" class="form-control form-glass fs-4 text-white fw-bold" id="title" name="title" placeholder="Enter title..." value="{% if post %}{{ post.title }}{% elif prefill_title %}{{ prefill_title }}{% else %}{% endif %}" required>
+                </div>
+
+                <!-- Content Area -->
+                <div class="mb-4">
+                    <label class="form-label text-secondary small fw-semibold">Content *</label>
+                    <!-- Hidden textarea for form submission -->
+                    <textarea class="d-none" id="content" name="content">{% if post %}{{ post.content }}{% elif prefill_content %}{{ prefill_content }}{% else %}{% endif %}</textarea>
+                    <!-- Quill container -->
+                    <div id="quill-editor" class="form-glass" style="padding: 0;">{% if post %}{{ (post.content if post else '') | safe }}{% elif prefill_content %}{{ prefill_content | safe }}{% else %}{% endif %}</div>
+                </div>
+
+                <!-- Summary Field -->
+                <div class="mb-4">
+                    <label for="summary" class="form-label text-secondary small fw-semibold">Summary / Meta Description</label>
+                    <textarea class="form-control form-glass" id="summary" name="summary" rows="3" placeholder="Write a short summary (150-200 chars) or use AI to generate it...">{{ post.summary if post else '' }}</textarea>
+                    <div class="form-text text-muted" style="font-size: 0.75rem;">A brief summary displayed on the dashboard grid feed.</div>
+                </div>
+
+                <div class="row">
+                    <!-- Featured Image Field (File upload only) -->
+                    <div class="col-md-6 mb-4">
+                        <label for="featured_image_file" class="form-label text-secondary small fw-semibold">Upload Featured Image</label>
+                        {% if post and post.featured_image %}
+                            <div class="mb-2 small text-muted">
+                                Current image: <a href="{{ post.featured_image }}" target="_blank" class="text-primary">{{ post.featured_image | truncate(35) }}</a>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input type="checkbox" class="form-check-input bg-dark border-secondary" id="clear_featured_image" name="clear_featured_image" value="true">
+                                <label class="form-check-label text-secondary small" for="clear_featured_image">Remove current image</label>
+                            </div>
+                            <input type="hidden" id="current_featured_image" value="{{ post.featured_image }}">
+                        {% else %}
+                            <input type="hidden" id="current_featured_image" value="">
+                        {% endif %}
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="file" class="form-control form-glass flex-grow-1" id="featured_image_file" name="featured_image_file" accept="image/*">
+                            <button type="button" id="clear-file-btn" class="btn btn-outline-danger btn-sm d-none" style="border-radius: 8px; padding: 7.5px 15px;"><i class="bi bi-x-lg"></i> Clear</button>
+                        </div>
+                        <div class="form-text text-muted" style="font-size: 0.75rem;">Supported formats: PNG, JPG, JPEG, GIF, WEBP. Max size: 16MB.</div>
+                        
+                        <!-- Image Preview Thumbnail -->
+                        <div id="image-preview-container" class="mt-3 d-none">
+                            <label class="form-label text-secondary small fw-semibold d-block">Selected Image Preview</label>
+                            <img id="image-preview" src="#" alt="Selected Image Preview" class="rounded border border-secondary border-opacity-25" style="max-height: 150px; object-fit: contain;">
+                        </div>
+                    </div>
+
+                    <!-- Category Field -->
+                    <div class="col-md-6 mb-4">
+                        <label for="category_id" class="form-label text-secondary small fw-semibold">Category</label>
+                        <select class="form-select form-glass" id="category_id" name="category_id">
+                            <option value="">-- None (Uncategorized) --</option>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}" {% if post and post.category_id == category.id %}selected{% elif prefill_category and prefill_category.lower() == category.name.lower() %}selected{% endif %}>{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row align-items-center">
+                    <!-- Tags Field -->
+                    <div class="col-md-5 mb-4">
+                        <label for="tags" class="form-label text-secondary small fw-semibold">Tags</label>
+                        <input type="text" class="form-control form-glass" id="tags" name="tags" placeholder="python, flask, AI, tech" value="{{ tags_str if tags_str else '' }}">
+                        <div class="form-text text-muted" style="font-size: 0.75rem;">Comma-separated values. Case insensitive.</div>
+                    </div>
+
+                    <!-- Status Dropdown -->
+                    <div class="col-md-4 mb-4">
+                        <label for="status" class="form-label text-secondary small fw-semibold">Publishing Status</label>
+                        <select class="form-select form-glass" id="status" name="status">
+                            <option value="Published" {% if post and post.status == 'Published' %}selected{% endif %}>Published</option>
+                            <option value="Draft" {% if post and post.status == 'Draft' %}selected{% endif %}>Draft (Invisible to feed)</option>
+                        </select>
+                    </div>
+
+                    <!-- Featured Checkbox -->
+                    <div class="col-md-3 mb-4 d-flex align-items-center" style="margin-top: 1.5rem;">
+                        <div class="form-check form-switch p-3 rounded w-100" style="border: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.02); height: 45px; display: flex; align-items: center; gap: 10px;">
+                            <input class="form-check-input ms-0" type="checkbox" id="is_featured" name="is_featured" value="true" {% if post and post.is_featured %}checked{% endif %}>
+                            <label class="form-check-label text-white small mb-0" for="is_featured">Feature this post</label>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="border-secondary opacity-25 my-4">
+
+                <!-- Action Buttons -->
+                <div class="d-flex justify-content-end gap-3">
+                    <button type="button" id="preview-btn" class="btn btn-outline-premium px-4 py-2">
+                        <i class="bi bi-eye-fill me-1"></i> Preview Post
+                    </button>
+                    <a href="{{ url_for('blog.index') }}" class="btn btn-dark px-4 py-2 border-secondary" style="border-radius: 8px;">Cancel</a>
+                    <button type="submit" class="btn btn-premium px-5 py-2">
+                        {% if post %}
+                            <i class="bi bi-check2-circle me-1"></i> Update Post
+                        {% else %}
+                            <i class="bi bi-send-fill me-1"></i> Publish Post
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- AI Sidebar Column -->
+    <div class="col-lg-4 fade-in">
+        <div class="glass-card p-4">
+            <!-- AI Copilot Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <span class="ai-badge"><i class="bi bi-robot"></i> AI Co-pilot</span>
+                <span class="badge bg-dark text-success border border-success border-opacity-25 small" style="font-size: 0.7rem; border-radius: 20px;">Ready</span>
+            </div>
+
+            <!-- Dynamic alerts placeholder for Groq config -->
+            <div id="ai-status-alert" class="alert alert-info d-none fade show small" role="alert"></div>
+
+            <!-- AI Settings Dropdowns -->
+            <div class="row g-2 mb-3">
+                <div class="col-6">
+                    <label for="ai-lang-select" class="form-label text-secondary small fw-semibold">Target Language</label>
+                    <select id="ai-lang-select" class="form-select form-glass">
+                        <option value="english">🇺🇸 English</option>
+                        <option value="hindi">🇮🇳 Hindi (हिंदी)</option>
+                        <option value="punjabi">🇮🇳 Punjabi (ਪੰਜਾਬੀ)</option>
+                        <option value="gujarati">🇮🇳 Gujarati (ગુજરાતી)</option>
+                    </select>
+                </div>
+                <div class="col-6">
+                    <label for="ai-tone-select" class="form-label text-secondary small fw-semibold">Writing Tone</label>
+                    <select id="ai-tone-select" class="form-select form-glass">
+                        <option value="standard">👔 Standard</option>
+                        <option value="friendly">🤗 Friendly</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- AI Tool Selector -->
+            <div class="mb-4">
+                <label for="ai-tool-select" class="form-label text-secondary small fw-semibold">Select AI Writer Tool</label>
+                <select id="ai-tool-select" class="form-select form-glass">
+                    <option value="title">💡 Title Generator</option>
+                    <option value="seo_content">✍️ Full SEO Blog Post</option>
+                    <option value="intro">🚀 Intro Paragraph Writer</option>
+                    <option value="conclusion">🏁 Conclusion Writer</option>
+                    <option value="rewrite">🔄 Content Rewriter</option>
+                    <option value="expand">➕ Paragraph Expander</option>
+                    <option value="faq">❓ FAQ Section Generator</option>
+                    <option value="meta_description">🔍 Meta Description Generator</option>
+                    <option value="outline">📋 Post Outliner</option>
+                    <option value="tags">🏷️ Tag Recommender</option>
+                </select>
+            </div>
+
+            <hr class="border-secondary opacity-25 mb-4">
+
+            <!-- Tool Input Panels -->
+            <div id="ai-tool-panels">
+                <!-- Title Generator Panel -->
+                <div id="panel-title" class="ai-panel">
+                    <div class="mb-3">
+                        <label for="ai-topic-input" class="form-label text-secondary small">Topic / Keywords *</label>
+                        <input type="text" id="ai-topic-input" class="form-control form-glass" placeholder="e.g. Flask API Tutorial">
+                    </div>
+                    <button type="button" id="ai-gen-titles-btn" class="btn btn-premium w-100 py-2">
+                        <i class="bi bi-magic me-1"></i> Generate Titles
+                    </button>
+                    <!-- Titles Output list -->
+                    <div id="gen-titles-list" class="mt-3 d-none">
+                        <label class="text-secondary small fw-semibold mb-2">Click to select title:</label>
+                        <div class="list-group list-group-flush bg-transparent border-0">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEO Content Panel -->
+                <div id="panel-seo_content" class="ai-panel d-none">
+                    <div class="mb-3">
+                        <label for="ai-keywords-input" class="form-label text-secondary small">Target Keywords</label>
+                        <input type="text" id="ai-keywords-input" class="form-control form-glass" placeholder="e.g. webdev, python, api">
+                        <div class="form-text text-muted" style="font-size: 0.72rem;">Comma-separated values.</div>
+                    </div>
+                    <div class="alert alert-info small mb-3 border-0 bg-info bg-opacity-10 text-info" style="border-radius: 8px;">
+                        <i class="bi bi-info-circle-fill me-1"></i> This will append the article to the editor content.
+                    </div>
+                    <button type="button" id="ai-gen-seo-btn" class="btn btn-premium w-100 py-2">
+                        <i class="bi bi-file-text-fill me-1"></i> Write Full Article
+                    </button>
+                </div>
+
+                <!-- Intro Panel -->
+                <div id="panel-intro" class="ai-panel d-none">
+                    <p class="text-secondary small mb-3">Generates an engaging, SEO-friendly introduction paragraph using the current post title.</p>
+                    <button type="button" id="ai-gen-intro-btn" class="btn btn-premium w-100 py-2">
+                        <i class="bi bi-rocket-takeoff-fill me-1"></i> Write Introduction
+                    </button>
+                </div>
+
+                <!-- Conclusion Panel -->
+                <div id="panel-conclusion" class="ai-panel d-none">
+                    <p class="text-secondary small mb-3">Generates a polished conclusion paragraph summarizing the post body content.</p>
+                    <button type="button" id="ai-gen-conclusion-btn" class="btn btn-premium w-100 py-2">
+                        <i class="bi bi-flag-fill me-1"></i> Write Conclusion
+                    </button>
+                </div>
+
+                <!-- Rewrite Panel -->
+                <div id="panel-rewrite" class="ai-panel d-none">
+                    <div class="mb-3">
+                        <label for="ai-rewrite-input" class="form-label text-secondary small">Text to Rewrite *</label>
+                        <textarea id="ai-rewrite-input" class="form-control form-glass" rows="4" placeholder="Enter paragraph to polish..."></textarea>
+                    </div>
+                    <button type="button" id="ai-gen-rewrite-btn" class="btn btn-premium w-100 py-2">
+                        <i class="bi bi-arrow-repeat me-1"></i> Rewrite Text
+                    </button>
+                </div>
+
+                <!-- Expand Panel -->
+                <div id="panel-expand" class="ai-panel d-none">
+                    <div class="mb-3">
+                        <label for="ai-expand-input" class="form-label text-secondary small">Text to Expand *</label>
+                        <textarea id="ai-expand-input" class="form-control form-glass" rows="4" placeholder="Enter text to expand with more details..."></textarea>
+                    </div>
+                    <button type="button" id="ai-gen-expand-btn" class="btn btn-premium w-100 py-2">
+                        <i class="bi bi-arrows-angle-expand me-1"></i> Expand Paragraph
+                    </button>
+                </div>
+
+                <!-- FAQ Panel -->
+                <div id="panel-faq" class="ai-panel d-none">
+                    <p class="text-secondary small mb-3">Generates a standard FAQ block based on the current editor content.</p>
+                    <button type="button" id="ai-gen-faq-btn" class="btn btn-premium w-100 py-2">
+                        <i class="bi bi-question-circle-fill me-1"></i> Generate FAQ Section
+                    </button>
+                </div>
+
+                <!-- Meta Description Panel -->
+                <div id="panel-meta_description" class="ai-panel d-none">
+                    <p class="text-secondary small mb-3">Generates a search snippet description under 160 characters from post content.</p>
+                    <button type="button" id="ai-gen-meta-btn" class="btn btn-premium w-100 py-2">
+                        <i class="bi bi-google me-1"></i> Generate Meta Description
+                    </button>
+                </div>
+
+                <!-- Outline Panel -->
+                <div id="panel-outline" class="ai-panel d-none">
+                    <p class="text-secondary small mb-3">Creates a structured outline based on the post title.</p>
+                    <button type="button" id="ai-gen-outline-btn" class="btn btn-premium w-100 py-2">
+                        <i class="bi bi-grid-1x2-fill me-1"></i> Generate Post Outline
+                    </button>
+                </div>
+
+                <!-- Tags Panel -->
+                <div id="panel-tags" class="ai-panel d-none">
+                    <p class="text-secondary small mb-3">Suggests primary tags and SEO keywords from the post content.</p>
+                    <button type="button" id="ai-gen-tags-btn" class="btn btn-premium w-100 py-2">
+                        <i class="bi bi-tags-fill me-1"></i> Recommend Tags
+                    </button>
+                </div>
+            </div>
+
+            <!-- AI Copilot Tip Rotation Widget (Humanly continuous loop transitions) -->
+            <hr class="border-secondary opacity-25 my-4">
+            <div class="ai-tip-widget p-3 rounded" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.03);">
+                <div class="d-flex align-items-center gap-2 mb-2 text-warning small fw-bold">
+                    <i class="bi bi-lightbulb-fill animate-pulse"></i>
+                    <span>CO-PILOT INSIGHT</span>
+                </div>
+                <div class="ai-tip-container position-relative overflow-hidden" style="height: 60px;">
+                    <div class="ai-tip-item active position-absolute w-100 text-secondary small" style="line-height: 1.5;">
+                        💡 <strong>Start with a question:</strong> Hook your readers instantly in the first sentence by addressing a common challenge they face.
+                    </div>
+                    <div class="ai-tip-item position-absolute w-100 text-secondary small" style="line-height: 1.5;">
+                        ⚡ <strong>Punchy layout:</strong> Keep paragraphs under 4 lines to ensure clean readability on mobile viewports.
+                    </div>
+                    <div class="ai-tip-item position-absolute w-100 text-secondary small" style="line-height: 1.5;">
+                        🏷️ <strong>Relevant tagging:</strong> Use 2-4 distinct tags to categorize your post so users can filter and discover it easily.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content glass-card" style="background: rgba(10, 14, 23, 0.95); border: 1px solid var(--border-color);">
+            <div class="modal-header border-bottom border-secondary border-opacity-25 p-4">
+                <h5 class="modal-title text-white" id="previewModalLabel"><i class="bi bi-eye-fill text-primary me-2"></i>Post Live Preview</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-5">
+                <article class="p-0">
+                    <div class="mb-3">
+                        <span id="preview-badge-draft" class="badge bg-warning text-dark me-2 px-2.5 py-1.5 d-none"><i class="bi bi-file-earmark-lock-fill me-1"></i>Draft</span>
+                        <span id="preview-category" class="badge bg-primary text-white border-0 px-2.5 py-1.5 me-2" style="font-size: 0.8rem;">Category</span>
+                        <span id="preview-tags" class="d-inline-flex gap-1 flex-wrap"></span>
+                    </div>
+
+                    <h1 id="preview-title" class="display-5 text-white mb-4" style="font-weight: 800; line-height: 1.25;">Post Title</h1>
+
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 pb-4 mb-4 border-bottom border-secondary border-opacity-25">
+                        <div class="d-flex align-items-center">
+                            <img src="{{ current_user.get_avatar() }}" alt="{{ current_user.username }}" class="user-avatar-lg me-3" style="width: 48px; height: 48px;">
+                            <div>
+                                <span class="text-white fw-bold">{{ current_user.username }}</span>
+                                <div class="text-muted small">Posted Just Now</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Featured Image inside Preview -->
+                    <div id="preview-image-container" class="mb-4 rounded-4 d-none" style="height: 300px; background-position: center; background-size: cover; background-repeat: no-repeat; box-shadow: inset 0 0 100px rgba(0,0,0,0.5); border: 1px solid var(--border-color);"></div>
+                    <div id="preview-image-fallback" class="mb-4 rounded-4" style="height: 200px; background: linear-gradient(135deg, hsl(200, 65%, 40%) 0%, hsl(330, 75%, 20%) 100%);"></div>
+
+                    <!-- Post Content Body -->
+                    <div id="preview-content-body" class="text-light fs-5 post-body ql-editor" style="line-height: 1.8; font-weight: 400; letter-spacing: -0.011em; padding: 0;">
+                        Content goes here...
+                    </div>
+                </article>
+            </div>
+            <div class="modal-footer border-top border-secondary border-opacity-25 p-3">
+                <button type="button" class="btn btn-dark border-secondary" data-bs-dismiss="modal">Close Preview</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Quill JS -->
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // AI Copilot Tip Rotator (continuous fade transitions loop)
+        const tipItems = document.querySelectorAll('.ai-tip-item');
+        if (tipItems.length > 0) {
+            let activeIdx = 0;
+            setInterval(() => {
+                tipItems[activeIdx].classList.remove('active');
+                activeIdx = (activeIdx + 1) % tipItems.length;
+                tipItems[activeIdx].classList.add('active');
+            }, 6000);
+        }
+
+        // Initialize Quill
+        const quill = new Quill('#quill-editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    ['blockquote', 'code-block'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['link', 'image'],
+                    ['clean']
+                ]
+            }
+        });
+
+        const form = document.getElementById('editor-form');
+        const contentInput = document.getElementById('content');
+
+        // Sync Quill HTML content to the hidden textarea and run validations before submitting
+        if (form) {
+            form.addEventListener('submit', (e) => {
+                const html = quill.root.innerHTML.trim();
+                const text = quill.getText().trim();
+                
+                if (text === '' && !quill.root.querySelector('img')) {
+                    alert('Post content cannot be empty.');
+                    e.preventDefault();
+                    return;
+                }
+                
+                contentInput.value = html;
+            });
+        }
+        // Featured Image File Input clear button and preview logic
+        const fileInput = document.getElementById('featured_image_file');
+        const clearFileBtn = document.getElementById('clear-file-btn');
+        if (fileInput && clearFileBtn) {
+            fileInput.addEventListener('change', () => {
+                if (fileInput.files && fileInput.files.length > 0) {
+                    clearFileBtn.classList.remove('d-none');
+                    const file = fileInput.files[0];
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const previewImg = document.getElementById('image-preview');
+                        const previewContainer = document.getElementById('image-preview-container');
+                        if (previewImg && previewContainer) {
+                            previewImg.src = e.target.result;
+                            previewContainer.classList.remove('d-none');
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    clearFileBtn.classList.add('d-none');
+                    const previewContainer = document.getElementById('image-preview-container');
+                    if (previewContainer) {
+                        previewContainer.classList.add('d-none');
+                    }
+                }
+            });
+            clearFileBtn.addEventListener('click', () => {
+                fileInput.value = '';
+                clearFileBtn.classList.add('d-none');
+                const previewContainer = document.getElementById('image-preview-container');
+                if (previewContainer) {
+                    previewContainer.classList.add('d-none');
+                }
+            });
+        }
+        // Sidebar Panel Toggle Logic
+        const aiToolSelect = document.getElementById('ai-tool-select');
+        const panels = document.querySelectorAll('.ai-panel');
+
+        if (aiToolSelect) {
+            aiToolSelect.addEventListener('change', () => {
+                const activeVal = aiToolSelect.value;
+                panels.forEach(p => {
+                    if (p.id === `panel-${activeVal}`) {
+                        p.classList.remove('d-none');
+                    } else {
+                        p.classList.add('d-none');
+                    }
+                });
+            });
+        }
+
+        // Automatic Translation Trigger on Language Selector Change
+        const aiLangSelect = document.getElementById('ai-lang-select');
+        let currentAiLang = aiLangSelect ? aiLangSelect.value : 'english';
+        if (aiLangSelect) {
+            aiLangSelect.addEventListener('change', async () => {
+                const newLang = aiLangSelect.value;
+                if (newLang === currentAiLang) return;
+                
+                const titleVal = titleInput.value.trim();
+                const contentVal = quill.root.innerHTML.trim();
+                
+                if (titleVal || (contentVal && contentVal !== '<p><br></p>')) {
+                    flashAIStatus(`Translating title and content to ${newLang.toUpperCase()}...`);
+                    
+                    try {
+                        const payload = {
+                            action: 'translate',
+                            text_to_process: `${titleVal} ||| ${contentVal}`,
+                            lang: newLang
+                        };
+                        const response = await fetch('/ai/assist', {
+                            method: 'POST',
+                            headers: { 
+                                'Content-Type': 'application/json', 
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRFToken': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify(payload)
+                        });
+                        const data = await response.json();
+                        
+                        let translatedText = '';
+                        if (data.status === 'success') {
+                            translatedText = data.result;
+                        } else if (data.status === 'offline' && data.mock_data) {
+                            translatedText = data.mock_data;
+                        }
+                        
+                        if (translatedText && translatedText.includes('|||')) {
+                            const parts = translatedText.split('|||');
+                            let translatedTitle = parts[0].replace(/^(शीर्षक:|ਸਿਰਲੇਖ:|શીર્ષક:)\s*/i, '').trim();
+                            let translatedContent = parts[1].trim();
+                            
+                            titleInput.value = translatedTitle;
+                            quill.root.innerHTML = translatedContent;
+                            flashAIStatus(`Successfully translated title and content to ${newLang.toUpperCase()}!`);
+                            currentAiLang = newLang;
+                        } else {
+                            flashAIStatus('Failed to translate content.', true);
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        flashAIStatus('Error translating content.', true);
+                    }
+                } else {
+                    currentAiLang = newLang;
+                }
+            });
+        }
+
+        // Live Preview Logic
+        const previewBtn = document.getElementById('preview-btn');
+        const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+        const titleInput = document.getElementById('title');
+        const categorySelect = document.getElementById('category_id');
+        const tagsInput = document.getElementById('tags');
+        const statusSelect = document.getElementById('status');
+        const currentFeaturedImageInput = document.getElementById('current_featured_image');
+        const clearFeaturedImageCheckbox = document.getElementById('clear_featured_image');
+        const featuredImageFileInput = document.getElementById('featured_image_file');
+
+        if (previewBtn) {
+            previewBtn.addEventListener('click', () => {
+                document.getElementById('preview-title').textContent = titleInput.value || 'Untitled Post';
+                document.getElementById('preview-content-body').innerHTML = quill.root.innerHTML;
+                
+                const selectedCategoryText = categorySelect.options[categorySelect.selectedIndex]?.text || '';
+                const categoryBadge = document.getElementById('preview-category');
+                if (categorySelect.value) {
+                    categoryBadge.textContent = selectedCategoryText;
+                    categoryBadge.classList.remove('d-none');
+                } else {
+                    categoryBadge.classList.add('d-none');
+                }
+
+                const draftBadge = document.getElementById('preview-badge-draft');
+                if (statusSelect.value === 'Draft') {
+                    draftBadge.classList.remove('d-none');
+                } else {
+                    draftBadge.classList.add('d-none');
+                }
+
+                const tagsContainer = document.getElementById('preview-tags');
+                tagsContainer.innerHTML = '';
+                const tagsVal = tagsInput.value.trim();
+                if (tagsVal) {
+                    tagsVal.split(',').forEach(tag => {
+                        const t = tag.trim().toLowerCase();
+                        if (t) {
+                            const badge = document.createElement('span');
+                            badge.className = 'tag-badge';
+                            badge.textContent = '#' + t;
+                            tagsContainer.appendChild(badge);
+                        }
+                    });
+                }
+
+                const imgContainer = document.getElementById('preview-image-container');
+                const imgFallback = document.getElementById('preview-image-fallback');
+                const currentImgVal = currentFeaturedImageInput ? currentFeaturedImageInput.value : '';
+                const isCleared = clearFeaturedImageCheckbox && clearFeaturedImageCheckbox.checked;
+                const file = featuredImageFileInput.files[0];
+
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        imgContainer.style.backgroundImage = `url('${e.target.result}')`;
+                        imgContainer.classList.remove('d-none');
+                        imgFallback.classList.add('d-none');
+                    };
+                    reader.readAsDataURL(file);
+                } else if (currentImgVal && !isCleared) {
+                    imgContainer.style.backgroundImage = `url('${currentImgVal}')`;
+                    imgContainer.classList.remove('d-none');
+                    imgFallback.classList.add('d-none');
+                } else {
+                    imgContainer.classList.add('d-none');
+                    imgFallback.classList.remove('d-none');
+                }
+
+                previewModal.show();
+            });
+        }
+
+        // Shared API Call helper
+        async function callAI(action, body = {}) {
+            const langSelect = document.getElementById('ai-lang-select');
+            const toneSelect = document.getElementById('ai-tone-select');
+            const lang = langSelect ? langSelect.value : 'english';
+            const tone = toneSelect ? toneSelect.value : 'standard';
+
+            const response = await fetch('/ai/assist', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ action, lang, tone, ...body })
+            });
+            return response.json();
+        }
+
+        // Helper to display AI status toast inside card
+        function flashAIStatus(message, isWarning = false) {
+            const alertPlaceholder = document.getElementById('ai-status-alert');
+            if (alertPlaceholder) {
+                alertPlaceholder.className = `alert alert-${isWarning ? 'warning' : 'info'} alert-dismissible fade show d-flex align-items-center mb-3`;
+                alertPlaceholder.innerHTML = `
+                    <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+                    <div>${message}</div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                `;
+                alertPlaceholder.classList.remove('d-none');
+                
+                if (window.aiAlertTimeout) {
+                    clearTimeout(window.aiAlertTimeout);
+                }
+                window.aiAlertTimeout = setTimeout(() => {
+                    alertPlaceholder.classList.remove('show');
+                    setTimeout(() => {
+                        alertPlaceholder.classList.add('d-none');
+                    }, 150);
+                }, 5000);
+            }
+        }
+
+        // 1. Title Generator Action
+        const genTitlesBtn = document.getElementById('ai-gen-titles-btn');
+        const topicInput = document.getElementById('ai-topic-input');
+        const genTitlesList = document.getElementById('gen-titles-list');
+
+        if (genTitlesBtn) {
+            genTitlesBtn.addEventListener('click', async () => {
+                const topic = topicInput.value.trim();
+                if (!topic) {
+                    alert('Please enter a topic or concept first.');
+                    return;
+                }
+                const originalBtn = genTitlesBtn.innerHTML;
+                genTitlesBtn.disabled = true;
+                genTitlesBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Processing...';
+                try {
+                    const data = await callAI('title', { topic });
+                    if (data.status === 'success' || data.status === 'offline') {
+                        const result = data.status === 'success' ? data.result : data.mock_data;
+                        const lines = result.split('\n');
+                        const container = genTitlesList.querySelector('.list-group');
+                        container.innerHTML = '';
+                        
+                        lines.forEach(line => {
+                            const match = line.match(/^\d+\.\s*(.*)/);
+                            const titleText = match ? match[1].replace(/["']/g, '').trim() : line.trim();
+                            if (titleText) {
+                                const btn = document.createElement('div');
+                                btn.className = 'title-suggestion-item';
+                                btn.textContent = titleText;
+                                btn.addEventListener('click', () => {
+                                    titleInput.value = titleText;
+                                    flashAIStatus(`Set post title to: "${titleText}"`);
+                                });
+                                container.appendChild(btn);
+                            }
+                        });
+                        genTitlesList.classList.remove('d-none');
+                        if (data.status === 'offline') {
+                            flashAIStatus(data.message, true);
+                        } else {
+                            flashAIStatus('AI suggested titles loaded below.');
+                        }
+                    } else {
+                        alert(data.message || data.error);
+                    }
+                } catch(e) {
+                    console.error(e);
+                } finally {
+                    genTitlesBtn.innerHTML = originalBtn;
+                    genTitlesBtn.disabled = false;
+                }
+            });
+        }
+
+        // 2. SEO Content Generator Action
+        const genSeoBtn = document.getElementById('ai-gen-seo-btn');
+        const keywordsInput = document.getElementById('ai-keywords-input');
+
+        if (genSeoBtn) {
+            genSeoBtn.addEventListener('click', async () => {
+                const title = titleInput.value.trim();
+                if (!title) {
+                    alert('Please enter an article title first so the AI has context.');
+                    return;
+                }
+                const originalBtn = genSeoBtn.innerHTML;
+                genSeoBtn.disabled = true;
+                genSeoBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Writing Post...';
+                try {
+                    const data = await callAI('seo_content', { title, keywords: keywordsInput.value.trim() });
+                    if (data.status === 'success' || data.status === 'offline') {
+                        const result = data.status === 'success' ? data.result : data.mock_data;
+                        const len = quill.getLength();
+                        quill.clipboard.dangerouslyPasteHTML(len, '<br>' + result);
+                        if (data.status === 'offline') {
+                            flashAIStatus(data.message, true);
+                        } else {
+                            flashAIStatus('Full SEO article drafted successfully!');
+                        }
+                    } else {
+                        alert(data.message || data.error);
+                    }
+                } catch(e) {
+                    console.error(e);
+                } finally {
+                    genSeoBtn.innerHTML = originalBtn;
+                    genSeoBtn.disabled = false;
+                }
+            });
+        }
+
+        // 3. Intro Generator Action
+        const genIntroBtn = document.getElementById('ai-gen-intro-btn');
+        if (genIntroBtn) {
+            genIntroBtn.addEventListener('click', async () => {
+                const title = titleInput.value.trim();
+                if (!title) {
+                    alert('Please enter a title to write an introduction.');
+                    return;
+                }
+                const originalBtn = genIntroBtn.innerHTML;
+                genIntroBtn.disabled = true;
+                genIntroBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Working...';
+                try {
+                    const data = await callAI('intro', { title });
+                    if (data.status === 'success' || data.status === 'offline') {
+                        const result = data.status === 'success' ? data.result : data.mock_data;
+                        quill.clipboard.dangerouslyPasteHTML(0, result + '<br>');
+                        if (data.status === 'offline') {
+                            flashAIStatus(data.message, true);
+                        } else {
+                            flashAIStatus('Introduction paragraph prepended!');
+                        }
+                    } else {
+                        alert(data.message || data.error);
+                    }
+                } catch(e) {
+                    console.error(e);
+                } finally {
+                    genIntroBtn.innerHTML = originalBtn;
+                    genIntroBtn.disabled = false;
+                }
+            });
+        }
+
+        // 4. Conclusion Generator Action
+        const genConclusionBtn = document.getElementById('ai-gen-conclusion-btn');
+        if (genConclusionBtn) {
+            genConclusionBtn.addEventListener('click', async () => {
+                const title = titleInput.value.trim();
+                if (!title) {
+                    alert('Please enter a title to write a conclusion.');
+                    return;
+                }
+                const originalBtn = genConclusionBtn.innerHTML;
+                genConclusionBtn.disabled = true;
+                genConclusionBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Working...';
+                try {
+                    const data = await callAI('conclusion', { title, content: quill.getText().trim() });
+                    if (data.status === 'success' || data.status === 'offline') {
+                        const result = data.status === 'success' ? data.result : data.mock_data;
+                        const len = quill.getLength();
+                        quill.clipboard.dangerouslyPasteHTML(len, '<br>' + result);
+                        if (data.status === 'offline') {
+                            flashAIStatus(data.message, true);
+                        } else {
+                            flashAIStatus('Conclusion paragraph appended!');
+                        }
+                    } else {
+                        alert(data.message || data.error);
+                    }
+                } catch(e) {
+                    console.error(e);
+                } finally {
+                    genConclusionBtn.innerHTML = originalBtn;
+                    genConclusionBtn.disabled = false;
+                }
+            });
+        }
+
+        // 5. Rewrite Action
+        const genRewriteBtn = document.getElementById('ai-gen-rewrite-btn');
+        const rewriteInput = document.getElementById('ai-rewrite-input');
+        if (genRewriteBtn) {
+            genRewriteBtn.addEventListener('click', async () => {
+                const text = rewriteInput.value.trim();
+                if (!text) {
+                    alert('Please enter some text inside the text area to rewrite.');
+                    return;
+                }
+                const originalBtn = genRewriteBtn.innerHTML;
+                genRewriteBtn.disabled = true;
+                genRewriteBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Processing...';
+                try {
+                    const data = await callAI('rewrite', { text_to_process: text });
+                    if (data.status === 'success' || data.status === 'offline') {
+                        const result = data.status === 'success' ? data.result : data.mock_data;
+                        const len = quill.getLength();
+                        quill.clipboard.dangerouslyPasteHTML(len, '<br>' + result);
+                        if (data.status === 'offline') {
+                            flashAIStatus(data.message, true);
+                        } else {
+                            flashAIStatus('Polished rewrite appended to editor!');
+                        }
+                    } else {
+                        alert(data.message || data.error);
+                    }
+                } catch(e) {
+                    console.error(e);
+                } finally {
+                    genRewriteBtn.innerHTML = originalBtn;
+                    genRewriteBtn.disabled = false;
+                }
+            });
+        }
+
+        // 6. Expand Action
+        const genExpandBtn = document.getElementById('ai-gen-expand-btn');
+        const expandInput = document.getElementById('ai-expand-input');
+        if (genExpandBtn) {
+            genExpandBtn.addEventListener('click', async () => {
+                const text = expandInput.value.trim();
+                if (!text) {
+                    alert('Please enter some text to expand.');
+                    return;
+                }
+                const originalBtn = genExpandBtn.innerHTML;
+                genExpandBtn.disabled = true;
+                genExpandBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Processing...';
+                try {
+                    const data = await callAI('expand', { text_to_process: text });
+                    if (data.status === 'success' || data.status === 'offline') {
+                        const result = data.status === 'success' ? data.result : data.mock_data;
+                        const len = quill.getLength();
+                        quill.clipboard.dangerouslyPasteHTML(len, '<br>' + result);
+                        if (data.status === 'offline') {
+                            flashAIStatus(data.message, true);
+                        } else {
+                            flashAIStatus('Expanded paragraph appended to editor!');
+                        }
+                    } else {
+                        alert(data.message || data.error);
+                    }
+                } catch(e) {
+                    console.error(e);
+                } finally {
+                    genExpandBtn.innerHTML = originalBtn;
+                    genExpandBtn.disabled = false;
+                }
+            });
+        }
+
+        // 7. FAQ Generator Action
+        const genFaqBtn = document.getElementById('ai-gen-faq-btn');
+        if (genFaqBtn) {
+            genFaqBtn.addEventListener('click', async () => {
+                const content = quill.getText().trim();
+                if (!content) {
+                    alert('Please write some content first so the FAQ can scan it.');
+                    return;
+                }
+                const originalBtn = genFaqBtn.innerHTML;
+                genFaqBtn.disabled = true;
+                genFaqBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Working...';
+                try {
+                    const data = await callAI('faq', { content });
+                    if (data.status === 'success' || data.status === 'offline') {
+                        const result = data.status === 'success' ? data.result : data.mock_data;
+                        const len = quill.getLength();
+                        quill.clipboard.dangerouslyPasteHTML(len, '<br>' + result);
+                        if (data.status === 'offline') {
+                            flashAIStatus(data.message, true);
+                        } else {
+                            flashAIStatus('FAQ section generated and appended to post!');
+                        }
+                    } else {
+                        alert(data.message || data.error);
+                    }
+                } catch(e) {
+                    console.error(e);
+                } finally {
+                    genFaqBtn.innerHTML = originalBtn;
+                    genFaqBtn.disabled = false;
+                }
+            });
+        }
+
+        // 8. Meta Description Action
+        const genMetaBtn = document.getElementById('ai-gen-meta-btn');
+        const summaryInput = document.getElementById('summary');
+        if (genMetaBtn) {
+            genMetaBtn.addEventListener('click', async () => {
+                const content = quill.getText().trim();
+                const title = titleInput.value.trim();
+                if (!content && !title) {
+                    alert('Write some content or a title first.');
+                    return;
+                }
+                const originalBtn = genMetaBtn.innerHTML;
+                genMetaBtn.disabled = true;
+                genMetaBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Working...';
+                try {
+                    const data = await callAI('meta_description', { content, title });
+                    if (data.status === 'success' || data.status === 'offline') {
+                        const result = data.status === 'success' ? data.result : data.mock_data;
+                        summaryInput.value = result;
+                        if (data.status === 'offline') {
+                            flashAIStatus(data.message, true);
+                        } else {
+                            flashAIStatus('SEO meta description updated in summary box.');
+                        }
+                    } else {
+                        alert(data.message || data.error);
+                    }
+                } catch(e) {
+                    console.error(e);
+                } finally {
+                    genMetaBtn.innerHTML = originalBtn;
+                    genMetaBtn.disabled = false;
+                }
+            });
+        }
+
+        // 9. Outline Generator Action
+        const genOutlineBtn = document.getElementById('ai-gen-outline-btn');
+        if (genOutlineBtn) {
+            genOutlineBtn.addEventListener('click', async () => {
+                const title = titleInput.value.trim();
+                if (!title) {
+                    alert('Please enter a title to write an outline.');
+                    return;
+                }
+                const originalBtn = genOutlineBtn.innerHTML;
+                genOutlineBtn.disabled = true;
+                genOutlineBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Working...';
+                try {
+                    const data = await callAI('outline', { title });
+                    if (data.status === 'success' || data.status === 'offline') {
+                        const result = data.status === 'success' ? data.result : data.mock_data;
+                        const formattedHTML = result.replace(/\n/g, '<br>');
+                        quill.clipboard.dangerouslyPasteHTML(0, formattedHTML + '<br><hr><br>');
+                        if (data.status === 'offline') {
+                            flashAIStatus(data.message, true);
+                        } else {
+                            flashAIStatus('AI outline generated and pasted at the top!');
+                        }
+                    } else {
+                        alert(data.message || data.error);
+                    }
+                } catch(e) {
+                    console.error(e);
+                } finally {
+                    genOutlineBtn.innerHTML = originalBtn;
+                    genOutlineBtn.disabled = false;
+                }
+            });
+        }
+
+        // 10. Tags Recommender Action
+        const genTagsBtn = document.getElementById('ai-gen-tags-btn');
+        if (genTagsBtn) {
+            genTagsBtn.addEventListener('click', async () => {
+                const content = quill.getText().trim();
+                if (!content) {
+                    alert('Please write some content first.');
+                    return;
+                }
+                const originalBtn = genTagsBtn.innerHTML;
+                genTagsBtn.disabled = true;
+                genTagsBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Analyzing...';
+                try {
+                    const data = await callAI('tags', { content });
+                    if (data.status === 'success' || data.status === 'offline') {
+                        const result = data.status === 'success' ? data.result : data.mock_data;
+                        document.getElementById('tags').value = result;
+                        if (data.status === 'offline') {
+                            flashAIStatus(data.message, true);
+                        } else {
+                            flashAIStatus('SEO suggested tags updated!');
+                        }
+                    } else {
+                        alert(data.message || data.error);
+                    }
+                } catch(e) {
+                    console.error(e);
+                } finally {
+                    genTagsBtn.innerHTML = originalBtn;
+                    genTagsBtn.disabled = false;
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

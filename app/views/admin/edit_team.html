@@ -1,0 +1,57 @@
+{% extends "admin/base.html" %}
+
+{% block admin_content %}
+<div class="row justify-content-center">
+    <div class="col-md-7 fade-in">
+        <a href="{{ url_for('admin.manage_about') }}" class="text-decoration-none text-secondary small d-inline-flex align-items-center mb-4 hover-white">
+            <i class="bi bi-arrow-left me-2"></i> Back to About Settings
+        </a>
+
+        <div class="glass-card p-5">
+            <h5 class="text-white mb-4 fw-bold">
+                {% if member %}
+                    <i class="bi bi-pencil-square text-primary me-2"></i>Edit Team Member
+                {% else %}
+                    <i class="bi bi-person-plus-fill text-primary me-2"></i>Add Team Member
+                {% endif %}
+            </h5>
+            
+            <form action="{% if member %}{{ url_for('admin.edit_team_member', id=member.id) }}{% else %}{{ url_for('admin.add_team_member') }}{% endif %}" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                    <label for="name" class="form-label text-secondary small fw-semibold">Member Name *</label>
+                    <input type="text" class="form-control form-glass text-white" id="name" name="name" value="{{ member.name if member else '' }}" placeholder="e.g. Alice Smith" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="role" class="form-label text-secondary small fw-semibold">Role / Title *</label>
+                    <input type="text" class="form-control form-glass text-white" id="role" name="role" value="{{ member.role if member else '' }}" placeholder="e.g. Chief Editor" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="bio" class="form-label text-secondary small fw-semibold">Short Bio Description</label>
+                    <textarea class="form-control form-glass text-white" id="bio" name="bio" rows="3" placeholder="A brief hook about this member...">{{ member.bio if member else '' }}</textarea>
+                </div>
+
+                <div class="mb-3">
+                    {% if member and member.avatar %}
+                        <label class="form-label text-secondary small fw-semibold d-block">Current Avatar</label>
+                        <img src="{{ member.avatar }}" alt="{{ member.name }}" class="rounded-circle mb-2" style="width: 80px; height: 80px; object-fit: cover; border: 2px solid rgba(99, 102, 241, 0.25);">
+                    {% endif %}
+                    <label for="avatar_file" class="form-label text-secondary small fw-semibold d-block">Upload Avatar Image</label>
+                    <input type="file" class="form-control form-glass text-white" id="avatar_file" name="avatar_file" accept="image/*">
+                </div>
+
+                <div class="mb-4">
+                    <label for="display_order" class="form-label text-secondary small fw-semibold">Display Order</label>
+                    <input type="number" class="form-control form-glass text-white" id="display_order" name="display_order" value="{{ member.display_order if member else '0' }}" min="0" required>
+                </div>
+
+                <button type="submit" class="btn btn-premium w-100 py-2.5">
+                    <i class="bi bi-check2-circle-fill me-1"></i> Save Team Member
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

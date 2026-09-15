@@ -1,0 +1,36 @@
+{% extends "admin/base.html" %}
+
+{% block admin_content %}
+<div class="glass-card p-4">
+    <h5 class="text-white mb-4 fw-bold"><i class="bi bi-envelope-paper text-primary me-2"></i>Contact Messages Inbox</h5>
+
+    {% if messages %}
+        <div class="d-flex flex-column gap-3">
+            {% for msg in messages %}
+                <div class="glass-card p-4 mb-1" style="background: rgba(255, 255, 255, 0.01); border-color: rgba(255, 255, 255, 0.03);">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3 pb-2 border-bottom border-secondary border-opacity-10">
+                        <div>
+                            <h6 class="text-white fw-bold mb-1">{{ msg.subject }}</h6>
+                            <span class="text-secondary small">From: <strong class="text-primary">{{ msg.name }}</strong> ({{ msg.email }})</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="text-muted small"><i class="bi bi-clock me-1"></i>{{ msg.created_at | strftime('%b %d, %Y at %I:%M %p') }}</span>
+                            <form action="{{ url_for('admin.delete_message', id=msg.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this message?');" style="display: inline-block;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger px-2.5 py-1" style="border-radius: 6px; font-size: 0.8rem;">
+                                    <i class="bi bi-trash-fill"></i> Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    <p class="text-secondary mb-0" style="white-space: pre-wrap; font-size: 0.95rem; line-height: 1.6;">{{ msg.message }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center p-5 text-muted">
+            <i class="bi bi-envelope-open fs-3 mb-2 d-block"></i> No messages received yet.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

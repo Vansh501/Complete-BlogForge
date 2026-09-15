@@ -1,0 +1,458 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Premium Interactive Landing Styling */
+    .landing-hero {
+        position: relative;
+        padding: 6rem 0 8rem;
+        text-align: center;
+        overflow: hidden;
+    }
+    
+    .interactive-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 2.5rem;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+    }
+    
+    .interactive-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(99, 102, 241, 0.15) 0%, rgba(0,0,0,0) 50%);
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .interactive-card:hover::before {
+        opacity: 1;
+    }
+    
+    .interactive-card:hover {
+        border-color: rgba(99, 102, 241, 0.4);
+        box-shadow: 0 15px 35px rgba(99, 102, 241, 0.15);
+        transform: translateY(-8px);
+    }
+    
+    .feature-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, rgba(99,102,241,0.15) 0%, rgba(168,85,247,0.15) 100%);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        color: #a5b4fc;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .interactive-card:hover .feature-icon {
+        transform: scale(1.1) rotate(5deg);
+        color: #ffffff;
+        background: var(--primary-gradient);
+    }
+    
+    /* Interactive Terminal Demo */
+    .terminal-window {
+        background: rgba(10, 14, 23, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.55);
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+    }
+    
+    .terminal-header {
+        background: rgba(255, 255, 255, 0.03);
+        padding: 0.75rem 1rem;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 6px;
+        display: inline-block;
+    }
+    .dot-red { background: #ef4444; }
+    .dot-yellow { background: #f59e0b; }
+    .dot-green { background: #10b981; }
+    
+    .terminal-body {
+        padding: 1.5rem;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.9rem;
+        min-height: 220px;
+    }
+    
+    .terminal-prompt {
+        color: #10b981;
+    }
+    
+    .typewriter-cursor {
+        display: inline-block;
+        width: 8px;
+        height: 15px;
+        background-color: #f3f4f6;
+        animation: blink 1s step-end infinite;
+        vertical-align: middle;
+        margin-left: 2px;
+    }
+    
+    @keyframes blink {
+        from, to { background-color: transparent }
+        50% { background-color: #f3f4f6; }
+    }
+    
+    /* Floating interactive nodes styling */
+    .glow-blob {
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, rgba(0,0,0,0) 70%);
+        border-radius: 50%;
+        z-index: -1;
+        pointer-events: none;
+    }
+    
+    /* Preview card styles for unauthenticated landing page */
+    .preview-post-card {
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.4s ease, box-shadow 0.4s ease;
+    }
+    .preview-post-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        border-color: rgba(99, 102, 241, 0.4) !important;
+        box-shadow: 0 15px 35px rgba(99, 102, 241, 0.18) !important;
+    }
+    .preview-post-card:hover .preview-lock-overlay {
+        opacity: 1 !important;
+    }
+    .preview-post-card:hover .filter-blur-preview {
+        filter: blur(4px);
+    }
+    .filter-blur-preview {
+        transition: filter 0.3s ease;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Ambient Background Globs -->
+<div class="glow-blob" style="top: 10%; left: 5%;"></div>
+<div class="glow-blob" style="bottom: 20%; right: 10%;"></div>
+
+<!-- Hero landing Splash section -->
+<section class="landing-hero fade-in">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6 text-start">
+                <span class="badge bg-primary px-3 py-2 mb-3 text-uppercase animate-pulse" style="letter-spacing: 0.1em; font-size: 0.72rem;">Creative Space</span>
+                <h1 class="display-3 text-white fw-bold mb-3" style="font-family: 'Outfit', sans-serif; line-height: 1.1;">
+                    Next-Gen Writing with <span class="brand-text">AI Collaboration</span>
+                </h1>
+                <p class="text-secondary fs-5 mb-4" style="line-height: 1.6; max-width: 540px;">
+                    Welcome to AetherBlog. A workspace designed to elevate human creative publishing using specialized, on-demand AI assistants. Sign in to write articles, organize categories, and explore publications.
+                </p>
+                <div class="d-flex gap-3">
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-premium px-4 py-2.5 fs-6">
+                        <i class="bi bi-person-plus-fill me-2"></i> Join the Community
+                    </a>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-premium px-4 py-2.5 fs-6">
+                        <i class="bi bi-box-arrow-in-right me-2"></i> Log In Now
+                    </a>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <!-- Interactive AI Outline Terminal Simulator -->
+                <div class="terminal-window">
+                    <div class="terminal-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="dot dot-red"></span>
+                            <span class="dot dot-yellow"></span>
+                            <span class="dot dot-green"></span>
+                        </div>
+                        <span class="text-secondary small fw-semibold" style="font-size: 0.75rem;"><i class="bi bi-cpu-fill me-1 text-primary"></i>AetherAI Simulator</span>
+                    </div>
+                    <div class="terminal-body text-start">
+                        <div class="mb-2"><span class="terminal-prompt">guest@aetherblog:~$</span> <span id="simulated-command"></span><span class="typewriter-cursor"></span></div>
+                        <div id="simulated-output" class="text-secondary" style="white-space: pre-line; line-height: 1.5; font-size: 0.85rem;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Interactive Feature Grid -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5 fade-in">
+            <h2 class="h1 text-white fw-bold mb-2" style="font-family: 'Outfit', sans-serif;">Dynamic Platform Utilities</h2>
+            <p class="text-secondary mx-auto" style="max-width: 500px;">Hover over each capability card to preview interactive behaviors</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4 fade-in" style="animation-delay: 0.1s;">
+                <div class="interactive-card" id="card-outline">
+                    <div class="feature-icon">
+                        <i class="bi bi-cpu"></i>
+                    </div>
+                    <h4 class="text-white mb-2">AI Copilot Outlines</h4>
+                    <p class="text-secondary small mb-0">Generate structure, introductions, and conclusions from a simple title concept using intelligent NLP processing.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4 fade-in" style="animation-delay: 0.2s;">
+                <div class="interactive-card" id="card-images">
+                    <div class="feature-icon">
+                        <i class="bi bi-images"></i>
+                    </div>
+                    <h4 class="text-white mb-2">Optimized Image Resizer</h4>
+                    <p class="text-secondary small mb-0">Server-side Pillow filters crop and scale large photo uploads to optimal dimensions instantly, reducing client load times.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4 fade-in" style="animation-delay: 0.3s;">
+                <div class="interactive-card" id="card-security">
+                    <div class="feature-icon">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <h4 class="text-white mb-2">Premium Security Policies</h4>
+                    <p class="text-secondary small mb-0">Secured with state-of-the-art Flask-WTF CSRF anti-forgery, password hashing, and clean Request Limit validation handlers.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Interactive Preview Posts Section -->
+<section class="py-5 bg-dark bg-opacity-20 border-top border-bottom border-secondary border-opacity-10 mb-5">
+    <div class="container">
+        <div class="text-center mb-5 fade-in">
+            <span class="badge bg-warning text-dark px-3 py-2 mb-3 text-uppercase fw-bold" style="letter-spacing: 0.1em; font-size: 0.72rem;"><i class="bi bi-star-fill me-1"></i>Trending Previews</span>
+            <h2 class="h1 text-white fw-bold mb-2" style="font-family: 'Outfit', sans-serif;">Unlock Premium Articles</h2>
+            <p class="text-secondary mx-auto" style="max-width: 500px;">Here is a sneak peek of what the community is reading right now. Sign in to unlock full access.</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Mock Card 1 -->
+            <div class="col-md-4">
+                <a href="{{ url_for('auth.login') }}" class="text-decoration-none preview-post-card-link">
+                    <div class="card glass-card h-100 preview-post-card position-relative overflow-hidden">
+                        <div class="preview-lock-overlay position-absolute w-100 h-100 d-flex flex-column align-items-center justify-content-center text-center p-3 opacity-0" style="background: rgba(10, 14, 23, 0.85); z-index: 10; transition: opacity 0.3s ease;">
+                            <div class="lock-icon-wrapper mb-3 d-flex align-items-center justify-content-center rounded-circle bg-warning bg-opacity-10 border border-warning border-opacity-20" style="width: 60px; height: 60px;">
+                                <i class="bi bi-lock-fill text-warning fs-3 animate-pulse"></i>
+                            </div>
+                            <h5 class="text-white fw-bold mb-1">Unlock Article</h5>
+                            <p class="text-secondary small px-3">Create a free account or log in to read this premium publication.</p>
+                            <span class="btn btn-sm btn-premium px-4 py-2 mt-2">Get Started</span>
+                        </div>
+                        <div class="card-hover-zoom position-relative" style="height: 160px;">
+                            <div class="card-image-bg w-100 h-100" style="background: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);"></div>
+                            <div class="position-absolute top-0 start-0 p-3">
+                                <span class="badge bg-dark bg-opacity-75 text-info border border-info border-opacity-25" style="font-size: 0.7rem;">Quantum Physics</span>
+                            </div>
+                        </div>
+                        <div class="card-body p-4 d-flex flex-column justify-content-between">
+                            <div>
+                                <h4 class="h5 card-title text-white mb-2" style="font-weight: 700;">Quantum Computing: The Encryption Threat</h4>
+                                <p class="card-text text-muted small filter-blur-preview" style="line-height: 1.5;">This is a preview of the upcoming shift in cryptography as quantum power scales. We analyze active defenses and how developers can adapt...</p>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top border-secondary border-opacity-10">
+                                <span class="text-muted small"><i class="bi bi-person me-1"></i> dr_quantum</span>
+                                <span class="text-muted small"><i class="bi bi-clock me-1"></i> 5 min read</span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Mock Card 2 -->
+            <div class="col-md-4">
+                <a href="{{ url_for('auth.login') }}" class="text-decoration-none preview-post-card-link">
+                    <div class="card glass-card h-100 preview-post-card position-relative overflow-hidden">
+                        <div class="preview-lock-overlay position-absolute w-100 h-100 d-flex flex-column align-items-center justify-content-center text-center p-3 opacity-0" style="background: rgba(10, 14, 23, 0.85); z-index: 10; transition: opacity 0.3s ease;">
+                            <div class="lock-icon-wrapper mb-3 d-flex align-items-center justify-content-center rounded-circle bg-warning bg-opacity-10 border border-warning border-opacity-20" style="width: 60px; height: 60px;">
+                                <i class="bi bi-lock-fill text-warning fs-3 animate-pulse"></i>
+                            </div>
+                            <h5 class="text-white fw-bold mb-1">Unlock Article</h5>
+                            <p class="text-secondary small px-3">Create a free account or log in to read this premium publication.</p>
+                            <span class="btn btn-sm btn-premium px-4 py-2 mt-2">Get Started</span>
+                        </div>
+                        <div class="card-hover-zoom position-relative" style="height: 160px;">
+                            <div class="card-image-bg w-100 h-100" style="background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);"></div>
+                            <div class="position-absolute top-0 start-0 p-3">
+                                <span class="badge bg-dark bg-opacity-75 text-info border border-info border-opacity-25" style="font-size: 0.7rem;">Design Systems</span>
+                            </div>
+                        </div>
+                        <div class="card-body p-4 d-flex flex-column justify-content-between">
+                            <div>
+                                <h4 class="h5 card-title text-white mb-2" style="font-weight: 700;">Fluid Typography & HSL Harmony In Modern UI</h4>
+                                <p class="card-text text-muted small filter-blur-preview" style="line-height: 1.5;">Typography and color palettes dictate visual hierarchy. Discover how modern fluid calculations using CSS clamp() and customized HSL spaces...</p>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top border-secondary border-opacity-10">
+                                <span class="text-muted small"><i class="bi bi-person me-1"></i> ui_architect</span>
+                                <span class="text-muted small"><i class="bi bi-clock me-1"></i> 8 min read</span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Mock Card 3 -->
+            <div class="col-md-4">
+                <a href="{{ url_for('auth.login') }}" class="text-decoration-none preview-post-card-link">
+                    <div class="card glass-card h-100 preview-post-card position-relative overflow-hidden">
+                        <div class="preview-lock-overlay position-absolute w-100 h-100 d-flex flex-column align-items-center justify-content-center text-center p-3 opacity-0" style="background: rgba(10, 14, 23, 0.85); z-index: 10; transition: opacity 0.3s ease;">
+                            <div class="lock-icon-wrapper mb-3 d-flex align-items-center justify-content-center rounded-circle bg-warning bg-opacity-10 border border-warning border-opacity-20" style="width: 60px; height: 60px;">
+                                <i class="bi bi-lock-fill text-warning fs-3 animate-pulse"></i>
+                            </div>
+                            <h5 class="text-white fw-bold mb-1">Unlock Article</h5>
+                            <p class="text-secondary small px-3">Create a free account or log in to read this premium publication.</p>
+                            <span class="btn btn-sm btn-premium px-4 py-2 mt-2">Get Started</span>
+                        </div>
+                        <div class="card-hover-zoom position-relative" style="height: 160px;">
+                            <div class="card-image-bg w-100 h-100" style="background: linear-gradient(135deg, #06b6d4 0%, #a855f7 100%);"></div>
+                            <div class="position-absolute top-0 start-0 p-3">
+                                <span class="badge bg-dark bg-opacity-75 text-info border border-info border-opacity-25" style="font-size: 0.7rem;">Programming</span>
+                            </div>
+                        </div>
+                        <div class="card-body p-4 d-flex flex-column justify-content-between">
+                            <div>
+                                <h4 class="h5 card-title text-white mb-2" style="font-weight: 700;">Python 4.0: What the Community Expects</h4>
+                                <p class="card-text text-muted small filter-blur-preview" style="line-height: 1.5;">Will PEP specs merge pattern matching and strict type declarations? We analyze the core development roadmap, typing paradigms, and interpreter speedups...</p>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top border-secondary border-opacity-10">
+                                <span class="text-muted small"><i class="bi bi-person me-1"></i> py_coder</span>
+                                <span class="text-muted small"><i class="bi bi-clock me-1"></i> 6 min read</span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // 1. Hover gradient tracking script for cards
+        const cards = document.querySelectorAll('.interactive-card');
+        cards.forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+
+        // 2. Simulated Typewriter AI Outline generation in Terminal
+        const commandEl = document.getElementById('simulated-command');
+        const outputEl = document.getElementById('simulated-output');
+        
+        const simulations = [
+            {
+                command: "aetherai --action outline --title 'Future of Quantum Computing'",
+                output: [
+                    "Connecting to AetherAI Copilot ... Connected (Status: ONLINE)",
+                    "Analyzing concept: 'Future of Quantum Computing'",
+                    "Generating post outline outline:",
+                    "",
+                    "1. Introduction: The Quantum Leap",
+                    "   - Understanding superposition & entanglement",
+                    "2. Hardware Milestones & Cryogenics",
+                    "3. Algorithmic Applications: Cryptography & Materials",
+                    "4. Conclusion: Navigating the Quantum Era",
+                    "",
+                    "Done! Outline pre-pended to editor content successfully."
+                ].join('\n')
+            },
+            {
+                command: "aetherai --action rewrite --style 'professional' --text 'Fluid UI is cool'",
+                output: [
+                    "Connecting to AetherAI Copilot ... Connected (Status: ONLINE)",
+                    "Polishing text body: 'Fluid UI is cool'",
+                    "Generating polished rewrite suggestions:",
+                    "",
+                    "Suggestion: \"Implementing a fluid design system dynamically enhances user experience by adjusting spatial typography values programmatically across all viewport break-points.\"",
+                    "",
+                    "Done! Content updated successfully."
+                ].join('\n')
+            },
+            {
+                command: "aetherai --action tags --content 'Learn Python and Flask'",
+                output: [
+                    "Connecting to AetherAI Copilot ... Connected (Status: ONLINE)",
+                    "Recommending keywords: 'Learn Python and Flask'",
+                    "Parsing context and generating tags list:",
+                    "",
+                    "Recommended tags: python, flask, webdev, backend, coding",
+                    "Confidence Score: 98%",
+                    "",
+                    "Done! Recommended tags updated successfully."
+                ].join('\n')
+            }
+        ];
+
+        let simIndex = 0;
+        let charIndex = 0;
+        let lineIndex = 0;
+
+        function typeCommand() {
+            if (!commandEl || !outputEl) return;
+            const currentSim = simulations[simIndex];
+            const commandText = currentSim.command;
+            if (charIndex < commandText.length) {
+                commandEl.textContent += commandText.charAt(charIndex);
+                charIndex++;
+                setTimeout(typeCommand, 60);
+            } else {
+                setTimeout(showOutput, 500);
+            }
+        }
+
+        function showOutput() {
+            if (!commandEl || !outputEl) return;
+            const currentSim = simulations[simIndex];
+            const outputLines = currentSim.output.split('\n');
+            if (lineIndex < outputLines.length) {
+                outputEl.textContent += outputLines[lineIndex] + '\n';
+                lineIndex++;
+                setTimeout(showOutput, 250);
+            } else {
+                // Restart typing loop with next simulation index after 8 seconds
+                setTimeout(() => {
+                    commandEl.textContent = '';
+                    outputEl.textContent = '';
+                    charIndex = 0;
+                    lineIndex = 0;
+                    simIndex = (simIndex + 1) % simulations.length;
+                    typeCommand();
+                }, 8000);
+            }
+        }
+
+        // Start typewriter
+        setTimeout(typeCommand, 1000);
+    });
+</script>
+{% endblock %}

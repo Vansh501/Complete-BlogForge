@@ -1,0 +1,33 @@
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# Python bytecode and cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# SQLite and Database instances
+instance/
+*.db
+*.sqlite3
+
+# IDE / Editor files
+.vscode/
+.idea/
+.qodo/
+*.swp
+*.swo
+tempCodeRunnerFile.py
+app/tempCodeRunnerFile.py
+
+# Logs and runtime artifacts
+*.log

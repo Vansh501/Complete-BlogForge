@@ -1,0 +1,128 @@
+{% extends "admin/base.html" %}
+
+{% block admin_content %}
+<!-- Dashboard Cards Grid -->
+<div class="row g-3 mb-4">
+    <!-- Total Posts -->
+    <div class="col-md-4 col-sm-6">
+        <div class="glass-card p-4 h-100 d-flex flex-column justify-content-between position-relative overflow-hidden" style="border-left: 4px solid var(--accent-indigo);">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-secondary small fw-semibold text-uppercase" style="letter-spacing: 0.05em;">Total Posts</span>
+                    <h3 class="text-white fw-bold mb-0 mt-1">{{ stats.total_posts }}</h3>
+                </div>
+                <div class="bg-indigo bg-opacity-10 text-indigo rounded p-3" style="background-color: rgba(99, 102, 241, 0.1); color: var(--accent-indigo);">
+                    <i class="bi bi-journals fs-4"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Published Posts -->
+    <div class="col-md-4 col-sm-6">
+        <div class="glass-card p-4 h-100 d-flex flex-column justify-content-between position-relative overflow-hidden" style="border-left: 4px solid #10b981;">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-secondary small fw-semibold text-uppercase" style="letter-spacing: 0.05em;">Published</span>
+                    <h3 class="text-white fw-bold mb-0 mt-1">{{ stats.published_posts }}</h3>
+                </div>
+                <div class="bg-success bg-opacity-10 text-success rounded p-3" style="background-color: rgba(16, 185, 129, 0.1); color: #10b981;">
+                    <i class="bi bi-journal-check fs-4"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Draft Posts -->
+    <div class="col-md-4 col-sm-6">
+        <div class="glass-card p-4 h-100 d-flex flex-column justify-content-between position-relative overflow-hidden" style="border-left: 4px solid #f59e0b;">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-secondary small fw-semibold text-uppercase" style="letter-spacing: 0.05em;">Drafts</span>
+                    <h3 class="text-white fw-bold mb-0 mt-1">{{ stats.draft_posts }}</h3>
+                </div>
+                <div class="bg-warning bg-opacity-10 text-warning rounded p-3" style="background-color: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+                    <i class="bi bi-journal-minus fs-4"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Categories -->
+    <div class="col-md-6 col-sm-6">
+        <div class="glass-card p-4 h-100 d-flex flex-column justify-content-between position-relative overflow-hidden" style="border-left: 4px solid var(--accent-cyan);">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-secondary small fw-semibold text-uppercase" style="letter-spacing: 0.05em;">Categories</span>
+                    <h3 class="text-white fw-bold mb-0 mt-1">{{ stats.total_categories }}</h3>
+                </div>
+                <div class="bg-info bg-opacity-10 text-info rounded p-3" style="background-color: rgba(6, 182, 212, 0.1); color: var(--accent-cyan);">
+                    <i class="bi bi-tags fs-4"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Registered Users -->
+    <div class="col-md-6 col-sm-12">
+        <div class="glass-card p-4 h-100 d-flex flex-column justify-content-between position-relative overflow-hidden" style="border-left: 4px solid var(--accent-purple);">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-secondary small fw-semibold text-uppercase" style="letter-spacing: 0.05em;">Total Users</span>
+                    <h3 class="text-white fw-bold mb-0 mt-1">{{ stats.total_users }}</h3>
+                </div>
+                <div class="bg-purple bg-opacity-10 text-purple rounded p-3" style="background-color: rgba(168, 85, 247, 0.1); color: var(--accent-purple);">
+                    <i class="bi bi-people-fill fs-4"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Secondary Statistics and Recent Items -->
+<div class="row g-4">
+    <!-- Recent Posts List -->
+    <div class="col-md-6">
+        <div class="glass-card p-4 h-100">
+            <h5 class="text-white mb-3 fw-bold"><i class="bi bi-file-text-fill text-primary me-2"></i>Recent Articles</h5>
+            {% if recent_posts %}
+                <div class="list-group list-group-flush bg-transparent">
+                    {% for r_post in recent_posts %}
+                        <div class="list-group-item bg-transparent border-secondary border-opacity-25 px-0 py-2.5 d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-light mb-1 fw-semibold">{{ r_post.title }}</h6>
+                                <span class="text-muted small">by {{ r_post.author.username }} &middot; {{ r_post.created_at | strftime }}</span>
+                            </div>
+                            <span class="badge {% if r_post.status.lower() == 'draft' %}bg-warning text-dark{% else %}bg-primary{% endif %} fs-8" style="font-size: 0.75rem;">{{ r_post.status }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted small mb-0">No posts written yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Users List -->
+    <div class="col-md-6">
+        <div class="glass-card p-4 h-100">
+            <h5 class="text-white mb-3 fw-bold"><i class="bi bi-people-fill text-primary me-2"></i>New Registrations</h5>
+            {% if recent_users %}
+                <div class="list-group list-group-flush bg-transparent">
+                    {% for r_user in recent_users %}
+                        <div class="list-group-item bg-transparent border-secondary border-opacity-25 px-0 py-2.5 d-flex align-items-center">
+                            <img src="{{ r_user.get_avatar() }}" alt="{{ r_user.username }}" class="user-avatar me-3" style="width: 36px; height: 36px;">
+                            <div>
+                                <h6 class="text-light mb-0 fw-semibold">{{ r_user.username }}</h6>
+                                <span class="text-muted small">{{ r_user.email }} &middot; Joined {{ r_user.created_at | strftime }}</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted small mb-0">No registered users.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

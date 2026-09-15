@@ -1,0 +1,44 @@
+- `[x]` Hide blog content for unauthenticated visitors and redirect post, category, and tag detail routes to landing page
+- `[x]` Create a gorgeous interactive landing page template `landing.html` for unauthenticated visitors (incorporating typewriter outlines terminal simulator and HSL hover card nodes tracking)
+- `[x]` Add auto-dismiss timers to all static flash alerts and dynamic AI helper alert blocks to automatically close after exactly 5 seconds
+- `[x]` Resolve author filter search box pre-fill fallacy by introducing a separate `author` filter query parameter (separating author filters from keyword queries)
+- `[x]` Update all navbar, dropdown, post metadata card, and pagination links to use `author` instead of `q`
+- `[x]` Remove literal HTML formatting tags from overview/summary of posts in all card listings (featured grid, standard feed, category, and tag pages) by applying `striptags` before slicing content
+- `[x]` Add predefined subject select dropdown options in contact form template (`contact.html`)
+- `[x]` Improve visibility and readability of post meta date/time details by overriding text-muted stylesheet rules with highly legible mid-light gray Slate shades globally in `style.css`
+- `[x]` Elevate the top highlight carousel's design by replacing flat overlay filters with gradient film overlays, adding translucent borders, glowing indigo box-shadows, and glowing highlight badges
+- `[x]` Add `/featured` route listing all featured posts with pagination (6 posts per page)
+- `[x]` Add "See More" link next to "Featured Articles" header on the homepage when total featured posts exceed 3
+- `[x]` Purge the dummy demo test post "Test Post Title" from the SQLite database
+- `[x]` Reduce default homepage Latest Articles grid limit to exactly 3 posts
+- `[x]` Add a transitioning "See All Posts" button on the default homepage under the Latest Articles feed linking directly to "My Posts" (current user's post list)
+- `[x]` Display a "Not Categorized" badge on posts that do not have an assigned category (on feed cards and detail views)
+- `[x]` Replace the static stats counters on the unauthenticated landing page with three premium interactive post previews displaying blur-on-hover card expansions and glowing lock overlays pointing to the registration/login page
+- `[x]` Embed an animated Co-pilot tip rotation widget with a continuous loop of 3 helpful writing tips that transition smoothly under the AI tools block inside the post editor sidebar (`editor.html`)
+- `[x]` Change Team Member name from Vansh Sharma to Clark in the database TeamMember record
+- `[x]` Add an interactive Office Mascots card widget in the Contact page left column (`contact.html`) that transitions smoothly between a cat (Luna) and a dog (Milo) with custom image scale fades and info fades
+- `[x]` Generate and package local high-resolution cartoon asset files (`luna_cat.jpg`, `milo_dog.jpg`) to avoid broken external remote image load issues on the Contact page mascot card
+- `[x]` Fix Milo's picture styling bug by removing Bootstrap's `opacity-0` utility class (which includes `!important` and blocks Javascript opacity updates) and using inline styling for initial opacity instead
+- `[x]` Upgrade office cat and dog illustrations to highly detailed, realistic close-up portrait photos (`luna_cat.jpg` and `milo_dog.jpg`) for a more mature and professional appearance
+- `[x]` Prevent unauthenticated visitor search form submissions from reloading or indexing, displaying a browser alert popup "signup to create post" while changing the input placeholder to "no matches found" and clearing its value
+- `[x]` Replace unauthenticated search's native browser alert popup dialog with a styled temporary Bootstrap alert card injected into the page's notification center that automatically dismisses after exactly 3 seconds
+- `[x]` Resolve unauthenticated search input's placeholder copy to a clearer action-based message "Sign in to search articles..." (replacing the old "no matches found")
+- `[x]` Fix the stuck top loading progress bar line above the search bar for unauthenticated search submits by forcing the loading bar width transition to 100% and fading it out upon submit cancellation
+- `[x]` Configure search input's placeholder restoration timeout, reverting the placeholder message back to its default value `"Search posts, topics or authors..."` after exactly 3 seconds
+- `[x]` Modify terminal simulator typewriter loop on unauthenticated landing page to cycle sequentially through 3 different AI co-pilot scenarios (Outline Generator, Text Rewriter, and Tag Recommender) on every loop
+- `[x]` Integrate a "Writing Tone" selector dropdown in the post editor's AI Co-pilot sidebar, adding an option to generate and rewrite drafts in friendly, approachable, and warm language
+- `[x]` Integrate a "Target Language" selector dropdown in the post editor's AI Co-pilot sidebar with Hindi (हिंदी), Punjabi (ਪੰਜਾਬੀ), and Gujarati (コツ) options, translating both generated post titles and body content into the chosen native script dynamically
+- `[x]` Add automatic translation listener trigger to Target Language select dropdown in editor sidebar that automatically calls translation service to translate existing post title and body content when selected language changes
+- `[x]` Restrict feed queries, featured widgets, recent posts sidebars, tag clouds, and category counts on the home dashboard to only display items authored by the currently logged-in user
+- `[x]` Display an interactive AI Copilot Suggested Drafts section on the homepage index when a logged-in user has 0 posts, populated with 3 dynamic post suggestions generated via Groq (with direct 'Start Writing' prefill links)
+- `[x]` Add a secondary suggested topics sub-navbar fixed at the top of the viewport when a logged-in user has 0 posts, prompting them with 3 catchy writing ideas that link to the editor with titles prefilled
+- `[x]` Upgrade default profile pictures when no avatar is uploaded to return a base64 encoded cyberpunk neon robot, scifi astronaut, retro pixel game controller, code bracket shield, or tech chip design based on their username
+- `[x]` Insert an interactive FAQs dropdown option between My Posts and Logout that opens a premium glassmorphic modal containing slide-down glowing accordion Q&As
+- `[x]` Build a preset avatar selection block on the account settings profile page with 5 cool high-resolution custom vector avatars that can be saved directly as the user's pfp
+- `[x]` Add a "Danger Zone / Delete Account" card to the profile page settings list that opens a warning modal asking the user to confirm permanent account deletion before removing records
+- `[x]` Fix FAQs accordion question text hover/focus contrast invisibility bug by specifying explicit white color and background translucency for all focus/hover states
+- `[x]` Resolve active/expanded state text contrast in FAQ accordion by replacing invalid CSS variable `var(--primary-color)` with the declared variable `var(--accent-indigo)`
+- `[x]` Resolve webkit-text-fill-color transparent inheritance issue from h2 header tags on accordion buttons by explicitly setting webkit-text-fill-color to currentColor
+- `[x]` Add premium overall micro-interactions and transitions (including hover scales, glowing box shadows, and navbar shimmers) across all key button elements, links, preset profile selectors, and brand logos
+- `[x]` Integrate interactive show/hide password eyes toggles on all password input groups (on the Login, Register, and Account Settings Change Password forms)
+- `[x]` Write validation tests `scratch/test_unauthenticated_landing.py`, `scratch/test_author_filter_param.py`, `scratch/test_summary_striptags.py`, `scratch/test_contact_deletion.py`, `scratch/test_featured_see_more.py`, `scratch/test_uncategorized_badge.py`, `scratch/test_editor_tip_rotator.py`, `scratch/test_about_page.py`, `scratch/test_contact_mascot.py`, `scratch/test_unauth_search_popup.py`, `scratch/test_ai_lang_tone.py`, `scratch/test_user_filtering_and_suggestions.py`, `scratch/test_user_avatar.py`, `scratch/test_faqs_modal.py`, and `scratch/test_delete_account.py` and run tests

@@ -1,0 +1,364 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<!-- Profile Header Grid -->
+<div class="row mb-5 align-items-center fade-in">
+    <div class="col-12">
+        <div class="glass-card p-5 d-flex flex-column flex-md-row align-items-center gap-4 text-center text-md-start">
+            <div class="position-relative" style="width: 120px; height: 120px;">
+                <img src="{{ current_user.get_avatar() }}" alt="{{ current_user.username }}" class="rounded-circle w-100 h-100 object-fit-cover shadow border border-secondary border-opacity-10">
+            </div>
+            <div class="flex-grow-1">
+                <span class="badge bg-primary px-3 py-2 mb-2 text-uppercase" style="letter-spacing: 0.1em; font-size: 0.7rem;">Member Profile</span>
+                <h1 class="display-6 text-white mb-1 fw-bold" style="font-family: 'Outfit', sans-serif;">{{ current_user.username }}</h1>
+                <p class="text-secondary mb-2">{{ current_user.email }}</p>
+                <p class="text-secondary small mb-0" style="max-width: 600px; line-height: 1.6;">
+                    {{ current_user.bio or 'This user hasn\'t added a biography yet. Write something about yourself below!' }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Form settings Column -->
+    <div class="col-lg-5 fade-in">
+        <!-- Update Info Card -->
+        <div class="glass-card p-4 mb-4">
+            <h5 class="text-white mb-4 fw-bold"><i class="bi bi-person-gear text-primary me-2"></i>Update Account Information</h5>
+            
+            <form action="{{ url_for('auth.profile') }}" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="action" value="update_info">
+                
+                <div class="mb-3">
+                    <label for="username" class="form-label text-secondary small fw-semibold">Username *</label>
+                    <input type="text" class="form-control form-glass text-white" id="username" name="username" value="{{ current_user.username }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="email" class="form-label text-secondary small fw-semibold">Email Address *</label>
+                    <input type="email" class="form-control form-glass text-white" id="email" name="email" value="{{ current_user.email }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="bio" class="form-label text-secondary small fw-semibold">Biography</label>
+                    <textarea class="form-control form-glass text-white" id="bio" name="bio" rows="3" placeholder="Tell us about yourself...">{{ current_user.bio or '' }}</textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label for="avatar_file" class="form-label text-secondary small fw-semibold d-block">Change Profile Photo</label>
+                    {% if current_user.avatar_url %}
+                        <div class="form-check mb-2">
+                            <input type="checkbox" class="form-check-input bg-dark border-secondary" id="clear_avatar" name="clear_avatar" value="true">
+                            <label class="form-check-label text-secondary small" for="clear_avatar">Remove photo</label>
+                        </div>
+                    {% endif %}
+                    <input type="file" class="form-control form-glass text-white" id="avatar_file" name="avatar_file" accept="image/*">
+                    <div class="form-text text-muted" style="font-size: 0.72rem;">PNG, JPG, JPEG, GIF, WEBP. Max size: 16MB.</div>
+                    
+                    <div class="mt-4">
+                        <label class="form-label text-secondary small fw-semibold d-block"><i class="bi bi-stars text-primary me-1"></i>Or Select a Preset Avatar:</label>
+                        <input type="hidden" name="preset_avatar" id="preset_avatar" value="">
+                        <div class="d-flex flex-wrap gap-3 mt-2">
+                            <!-- Preset 1 -->
+                            <div class="preset-avatar-btn position-relative" style="width: 54px; height: 54px; cursor: pointer; border-radius: 12px; border: 2px solid transparent; overflow: hidden; transition: all 0.2s;" onclick="selectPresetAvatar('avatar1', this)" title="Neon Robot">
+                                <img src="/static/images/avatar1.svg" class="w-100 h-100" style="object-fit: cover;" alt="Neon Robot">
+                            </div>
+                            <!-- Preset 2 -->
+                            <div class="preset-avatar-btn position-relative" style="width: 54px; height: 54px; cursor: pointer; border-radius: 12px; border: 2px solid transparent; overflow: hidden; transition: all 0.2s;" onclick="selectPresetAvatar('avatar2', this)" title="Space Helmet">
+                                <img src="/static/images/avatar2.svg" class="w-100 h-100" style="object-fit: cover;" alt="Space Helmet">
+                            </div>
+                            <!-- Preset 3 -->
+                            <div class="preset-avatar-btn position-relative" style="width: 54px; height: 54px; cursor: pointer; border-radius: 12px; border: 2px solid transparent; overflow: hidden; transition: all 0.2s;" onclick="selectPresetAvatar('avatar3', this)" title="Retro Game">
+                                <img src="/static/images/avatar3.svg" class="w-100 h-100" style="object-fit: cover;" alt="Retro Game">
+                            </div>
+                            <!-- Preset 4 -->
+                            <div class="preset-avatar-btn position-relative" style="width: 54px; height: 54px; cursor: pointer; border-radius: 12px; border: 2px solid transparent; overflow: hidden; transition: all 0.2s;" onclick="selectPresetAvatar('avatar4', this)" title="Code Shield">
+                                <img src="/static/images/avatar4.svg" class="w-100 h-100" style="object-fit: cover;" alt="Code Shield">
+                            </div>
+                            <!-- Preset 5 -->
+                            <div class="preset-avatar-btn position-relative" style="width: 54px; height: 54px; cursor: pointer; border-radius: 12px; border: 2px solid transparent; overflow: hidden; transition: all 0.2s;" onclick="selectPresetAvatar('avatar5', this)" title="Silicon Chip">
+                                <img src="/static/images/avatar5.svg" class="w-100 h-100" style="object-fit: cover;" alt="Silicon Chip">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-premium w-100 py-2">
+                    <i class="bi bi-check2-circle me-1"></i> Save Information
+                </button>
+            </form>
+        </div>
+
+        <!-- Change Password Card -->
+        <div class="glass-card p-4">
+            <h5 class="text-white mb-4 fw-bold"><i class="bi bi-key-fill text-primary me-2"></i>Change Password</h5>
+            
+            <form action="{{ url_for('auth.profile') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="action" value="change_password">
+
+                <div class="mb-3">
+                    <label for="current_password" class="form-label text-secondary small fw-semibold">Current Password *</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-dark border-secondary text-secondary" style="border-right: none;">
+                            <i class="bi bi-key-fill"></i>
+                        </span>
+                        <input type="password" class="form-control form-glass text-white" style="border-left: none; border-right: none;" id="current_password" name="current_password" required>
+                        <span class="input-group-text bg-dark border-secondary text-secondary" style="border-left: none; cursor: pointer; transition: all 0.2s;" id="toggleCurrentPassword">
+                            <i class="bi bi-eye-slash-fill" id="toggleCurrentPasswordIcon"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="new_password" class="form-label text-secondary small fw-semibold">New Password *</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-dark border-secondary text-secondary" style="border-right: none;">
+                            <i class="bi bi-key-fill"></i>
+                        </span>
+                        <input type="password" class="form-control form-glass text-white" style="border-left: none; border-right: none;" id="new_password" name="new_password" placeholder="Min 6 characters" required>
+                        <span class="input-group-text bg-dark border-secondary text-secondary" style="border-left: none; cursor: pointer; transition: all 0.2s;" id="toggleNewPassword">
+                            <i class="bi bi-eye-slash-fill" id="toggleNewPasswordIcon"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="confirm_password" class="form-label text-secondary small fw-semibold">Confirm New Password *</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-dark border-secondary text-secondary" style="border-right: none;">
+                            <i class="bi bi-key-fill"></i>
+                        </span>
+                        <input type="password" class="form-control form-glass text-white" style="border-left: none; border-right: none;" id="confirm_password" name="confirm_password" required>
+                        <span class="input-group-text bg-dark border-secondary text-secondary" style="border-left: none; cursor: pointer; transition: all 0.2s;" id="toggleConfirmPassword">
+                            <i class="bi bi-eye-slash-fill" id="toggleConfirmPasswordIcon"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-outline-premium w-100 py-2">
+                    <i class="bi bi-shield-lock-fill me-1"></i> Change Password
+                </button>
+            </form>
+        </div>
+
+        <!-- Delete Account Card (Danger Zone) -->
+        <div class="glass-card p-4 mt-4 border-danger border-opacity-20" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(10, 14, 23, 0.9) 100%);">
+            <h5 class="text-danger mb-3 fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>Danger Zone</h5>
+            <p class="text-secondary small mb-4">Deleting your account is permanent. All your articles, drafts, and uploaded media will be removed from AetherBlog forever.</p>
+            <button type="button" class="btn btn-outline-danger w-100 py-2" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                <i class="bi bi-trash3-fill me-1"></i> Delete My Account
+            </button>
+        </div>
+    </div>
+
+    <!-- Posts lists Column -->
+    <div class="col-lg-7 fade-in">
+        <div class="glass-card p-4 h-100">
+            <!-- Nav Tabs -->
+            <ul class="nav nav-tabs border-secondary border-opacity-25 mb-4" id="profileTabs" role="tablist" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active text-white px-4 py-2.5" id="published-tab" data-bs-toggle="tab" data-bs-target="#published" type="button" role="tab" aria-controls="published" aria-selected="true" style="border: none; background: transparent; border-bottom: 3px solid var(--primary-color);">
+                        <i class="bi bi-journal-check text-primary me-2"></i> Published ({{ published_posts|length }})
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link text-white px-4 py-2.5 ms-2" id="drafts-tab" data-bs-toggle="tab" data-bs-target="#drafts" type="button" role="tab" aria-controls="drafts" aria-selected="false" style="border: none; background: transparent;">
+                        <i class="bi bi-journal-text text-secondary me-2"></i> Drafts ({{ draft_posts|length }})
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Tab Contents -->
+            <div class="tab-content" id="profileTabContent">
+                <!-- Published Tab -->
+                <div class="tab-pane fade show active" id="published" role="tabpanel" aria-labelledby="published-tab">
+                    {% if published_posts %}
+                        <div class="d-flex flex-column gap-3">
+                            {% for post in published_posts %}
+                                <div class="glass-card p-3 border border-secondary border-opacity-10 d-flex justify-content-between align-items-center flex-wrap gap-2" style="background: rgba(255,255,255,0.01);">
+                                    <div>
+                                        <h6 class="text-white fw-bold mb-1" style="font-size: 0.95rem;">{{ post.title }}</h6>
+                                        <span class="text-muted small"><i class="bi bi-clock me-1"></i>{{ post.created_at | strftime }}</span>
+                                        {% if post.category %}
+                                            <span class="badge bg-dark text-info border border-info border-opacity-10 ms-2" style="font-size: 0.65rem;">{{ post.category.name }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <a href="{{ url_for('blog.post_detail', slug=post.slug) }}" class="btn btn-sm btn-outline-premium px-3 py-1.5" style="border-radius: 6px; font-size: 0.8rem;">
+                                            <i class="bi bi-eye"></i> View
+                                        </a>
+                                        <a href="{{ url_for('blog.edit_post', id=post.id) }}" class="btn btn-sm btn-premium px-3 py-1.5" style="border-radius: 6px; font-size: 0.8rem;">
+                                            <i class="bi bi-pencil-fill"></i> Edit
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5 text-muted">
+                            <i class="bi bi-journal-album fs-3 mb-2 d-block"></i> No published articles yet.
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Drafts Tab -->
+                <div class="tab-pane fade" id="drafts" role="tabpanel" aria-labelledby="drafts-tab">
+                    {% if draft_posts %}
+                        <div class="d-flex flex-column gap-3">
+                            {% for post in draft_posts %}
+                                <div class="glass-card p-3 border border-secondary border-opacity-10 d-flex justify-content-between align-items-center flex-wrap gap-2" style="background: rgba(255,255,255,0.01);">
+                                    <div>
+                                        <h6 class="text-white fw-bold mb-1" style="font-size: 0.95rem;">{{ post.title }}</h6>
+                                        <span class="text-muted small"><i class="bi bi-clock me-1"></i>Last saved: {{ post.updated_at | strftime }}</span>
+                                        {% if post.category %}
+                                            <span class="badge bg-dark text-info border border-info border-opacity-10 ms-2" style="font-size: 0.65rem;">{{ post.category.name }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <a href="{{ url_for('blog.edit_post', id=post.id) }}" class="btn btn-sm btn-premium px-3 py-1.5" style="border-radius: 6px; font-size: 0.8rem;">
+                                            <i class="bi bi-pencil-fill"></i> Edit Draft
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5 text-muted">
+                            <i class="bi bi-file-earmark-diff fs-3 mb-2 d-block"></i> No drafts found.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function selectPresetAvatar(presetName, element) {
+        // Set hidden input value
+        const input = document.getElementById('preset_avatar');
+        if (input) {
+            input.value = presetName;
+        }
+        
+        // Update selected style indicators
+        document.querySelectorAll('.preset-avatar-btn').forEach(btn => {
+            btn.style.borderColor = 'transparent';
+            btn.style.boxShadow = 'none';
+        });
+        
+        element.style.borderColor = 'var(--primary-color)';
+        element.style.boxShadow = '0 0 10px rgba(99, 102, 241, 0.4)';
+    }
+</script>
+
+<!-- Delete Account Confirmation Modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-card border border-danger border-opacity-25 shadow-lg" style="background: rgba(10, 14, 23, 0.98); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 16px;">
+            <div class="modal-header border-bottom border-secondary border-opacity-25 p-4">
+                <div class="d-flex align-items-center">
+                    <div class="bg-danger bg-opacity-10 border border-danger border-opacity-25 rounded-circle p-2.5 me-3 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+                        <i class="bi bi-exclamation-octagon-fill text-danger fs-4"></i>
+                    </div>
+                    <h5 class="modal-title text-white fw-bold fs-5" id="deleteAccountModalLabel">Confirm Account Deletion</h5>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-white fw-semibold mb-2">Are you absolutely sure you want to delete your account?</p>
+                <p class="text-secondary small mb-0">This action is permanent and cannot be undone. All your posts, drafts, and profile data will be erased immediately. Please proceed with caution.</p>
+            </div>
+            <div class="modal-footer border-top border-secondary border-opacity-25 p-4 justify-content-end gap-2">
+                <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                <form action="{{ url_for('auth.delete_account') }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger px-4">
+                        <i class="bi bi-trash3-fill me-1"></i> Permanently Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Toggle tab highlights for a clean visual effect
+        const tabEl = document.querySelectorAll('#profileTabs button');
+        tabEl.forEach(btn => {
+            btn.addEventListener('click', function() {
+                tabEl.forEach(b => {
+                    b.style.borderBottom = 'none';
+                });
+                this.style.borderBottom = '3px solid var(--primary-color)';
+            });
+        });
+
+        // Toggle Current Password
+        const toggleCurrent = document.getElementById('toggleCurrentPassword');
+        const currentInput = document.getElementById('current_password');
+        const currentIcon = document.getElementById('toggleCurrentPasswordIcon');
+        if (toggleCurrent && currentInput && currentIcon) {
+            toggleCurrent.addEventListener('click', () => {
+                const type = currentInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                currentInput.setAttribute('type', type);
+                if (type === 'password') {
+                    currentIcon.classList.remove('bi-eye-fill');
+                    currentIcon.classList.add('bi-eye-slash-fill');
+                    currentIcon.style.color = '';
+                } else {
+                    currentIcon.classList.remove('bi-eye-slash-fill');
+                    currentIcon.classList.add('bi-eye-fill');
+                    currentIcon.style.color = 'var(--accent-cyan)';
+                }
+            });
+        }
+
+        // Toggle New Password
+        const toggleNew = document.getElementById('toggleNewPassword');
+        const newInput = document.getElementById('new_password');
+        const newIcon = document.getElementById('toggleNewPasswordIcon');
+        if (toggleNew && newInput && newIcon) {
+            toggleNew.addEventListener('click', () => {
+                const type = newInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                newInput.setAttribute('type', type);
+                if (type === 'password') {
+                    newIcon.classList.remove('bi-eye-fill');
+                    newIcon.classList.add('bi-eye-slash-fill');
+                    newIcon.style.color = '';
+                } else {
+                    newIcon.classList.remove('bi-eye-slash-fill');
+                    newIcon.classList.add('bi-eye-fill');
+                    newIcon.style.color = 'var(--accent-cyan)';
+                }
+            });
+        }
+
+        // Toggle Confirm Password
+        const toggleConfirm = document.getElementById('toggleConfirmPassword');
+        const confirmInput = document.getElementById('confirm_password');
+        const confirmIcon = document.getElementById('toggleConfirmPasswordIcon');
+        if (toggleConfirm && confirmInput && confirmIcon) {
+            toggleConfirm.addEventListener('click', () => {
+                const type = confirmInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                confirmInput.setAttribute('type', type);
+                if (type === 'password') {
+                    confirmIcon.classList.remove('bi-eye-fill');
+                    confirmIcon.classList.add('bi-eye-slash-fill');
+                    confirmIcon.style.color = '';
+                } else {
+                    confirmIcon.classList.remove('bi-eye-slash-fill');
+                    confirmIcon.classList.add('bi-eye-fill');
+                    confirmIcon.style.color = 'var(--accent-cyan)';
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block title %}Contact Us{% endblock %}
+
+{% block content %}
+<div class="row g-5 py-4 fade-in">
+    <!-- Contact Info Column -->
+    <div class="col-lg-5">
+        <span class="badge bg-primary px-3 py-2 mb-3 text-uppercase" style="letter-spacing: 0.1em; font-size: 0.75rem;">Get In Touch</span>
+        <h1 class="display-5 text-white mb-4 fw-extrabold" style="font-family: 'Outfit', 'Inter', sans-serif;">Connect With Us</h1>
+        <p class="text-secondary mb-5 fs-6" style="line-height: 1.7;">
+            Have questions about core features, partnerships, or custom options? Drop us a line, visit our offices, or follow our dev channels.
+        </p>
+
+        <!-- Contact Cards -->
+        <div class="d-flex flex-column gap-4 mb-5">
+            <div class="d-flex align-items-center">
+                <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-3 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                    <i class="bi bi-geo-alt-fill fs-5"></i>
+                </div>
+                <div>
+                    <h6 class="text-white fw-bold mb-0" style="font-size: 0.95rem;">Our Headquarters</h6>
+                    <span class="text-secondary small">C-Block, Ranjit Avenue, Amritsar, Punjab 143001, India</span>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center">
+                <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-3 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                    <i class="bi bi-telephone-fill fs-5"></i>
+                </div>
+                <div>
+                    <h6 class="text-white fw-bold mb-0" style="font-size: 0.95rem;">Phone Number</h6>
+                    <span class="text-secondary small">+91 183 506 3222</span>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center">
+                <div class="bg-primary bg-opacity-10 text-primary rounded-3 p-3 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                    <i class="bi bi-envelope-fill fs-5"></i>
+                </div>
+                <div>
+                    <h6 class="text-white fw-bold mb-0" style="font-size: 0.95rem;">Email Support</h6>
+                    <span class="text-secondary small">contact@aetherblog.dev</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Social Connections -->
+        <h5 class="text-white fw-bold mb-3" style="font-size: 0.95rem;">Follow Our Development</h5>
+        <div class="d-flex gap-3 mb-5">
+            <a href="https://twitter.com/" target="_blank" class="btn btn-dark d-flex align-items-center justify-content-center rounded-circle border border-secondary border-opacity-10 hover-primary" style="width: 44px; height: 44px; transition: all 0.3s ease;">
+                <i class="bi bi-twitter-x"></i>
+            </a>
+            <a href="https://github.com/" target="_blank" class="btn btn-dark d-flex align-items-center justify-content-center rounded-circle border border-secondary border-opacity-10 hover-primary" style="width: 44px; height: 44px; transition: all 0.3s ease;">
+                <i class="bi bi-github"></i>
+            </a>
+            <a href="https://linkedin.com/" target="_blank" class="btn btn-dark d-flex align-items-center justify-content-center rounded-circle border border-secondary border-opacity-10 hover-primary" style="width: 44px; height: 44px; transition: all 0.3s ease;">
+                <i class="bi bi-linkedin"></i>
+            </a>
+            <a href="https://youtube.com/" target="_blank" class="btn btn-dark d-flex align-items-center justify-content-center rounded-circle border border-secondary border-opacity-10 hover-primary" style="width: 44px; height: 44px; transition: all 0.3s ease;">
+                <i class="bi bi-youtube"></i>
+            </a>
+        </div>
+
+        <!-- Google Map Embedding (Styled for Dark Aesthetic) -->
+        <div class="border border-secondary border-opacity-10 p-1.5 rounded-3 bg-dark mb-4">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3396.1469792070857!2d74.84752537617616!3d31.657065940251785!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x391963577d6fb8cf%3A0xa632b719464e7dfc!2sKhalsa%20College%20of%20Engineering%20and%20Technology!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin" width="100%" height="250" style="border:0; border-radius: 8px; filter: grayscale(1) invert(0.9) contrast(1.2);" allowfullscreen="" loading="lazy"></iframe>
+        </div>
+
+        <!-- Interactive Mascot Card (Cat & Dog Transitions) -->
+        <div class="glass-card p-4 text-center position-relative overflow-hidden" id="mascot-card" style="border: 1px solid rgba(255, 255, 255, 0.05); transition: border-color 0.3s ease, box-shadow 0.3s ease;">
+            <div class="position-absolute start-50 top-50 translate-middle" style="width: 150px; height: 150px; background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, rgba(0,0,0,0) 70%); z-index: 1; pointer-events: none;"></div>
+            
+            <div class="position-relative" style="z-index: 2;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="badge bg-dark bg-opacity-75 text-info border border-info border-opacity-25" style="font-size: 0.7rem;"><i class="bi bi-heart-fill text-danger me-1"></i>Office Mascots</span>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-dark active border-secondary border-opacity-25 px-2.5 py-1 text-white" id="btn-mascot-cat" style="font-size: 0.72rem; background-color: rgba(99, 102, 241, 0.2); border-color: rgba(99, 102, 241, 0.3);">😸 Cat</button>
+                        <button type="button" class="btn btn-dark border-secondary border-opacity-25 px-2.5 py-1 text-white" id="btn-mascot-dog" style="font-size: 0.72rem;">🐶 Dog</button>
+                    </div>
+                </div>
+
+                <!-- Mascot Viewport -->
+                <div class="mascot-viewport position-relative mx-auto mb-3" style="width: 90px; height: 90px; border-radius: 50%; overflow: hidden; border: 2px solid rgba(255, 255, 255, 0.1); background: rgba(10, 14, 23, 0.4);">
+                    <img id="mascot-image-cat" src="{{ url_for('static', filename='images/luna_cat.jpg') }}" alt="Cat Mascot" class="position-absolute start-0 top-0 w-100 h-100 object-fit-cover" style="transition: opacity 0.5s ease, transform 0.5s ease; transform: scale(1);">
+                    <img id="mascot-image-dog" src="{{ url_for('static', filename='images/milo_dog.jpg') }}" alt="Dog Mascot" class="position-absolute start-0 top-0 w-100 h-100 object-fit-cover" style="opacity: 0; transition: opacity 0.5s ease, transform 0.5s ease; transform: scale(0.9);">
+                </div>
+
+                <!-- Mascot Info -->
+                <h5 class="text-white fw-bold mb-1" id="mascot-name" style="font-size: 0.95rem;">Luna</h5>
+                <p class="text-info small mb-2 fw-semibold" id="mascot-role" style="font-size: 0.75rem;">Chief Napping Officer</p>
+                <p class="text-secondary small mb-0 px-2" id="mascot-desc" style="font-size: 0.78rem; line-height: 1.4; min-height: 38px;">Likes keyboards, warm sunbeams, and stepping on the return key during code commits.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Form Column -->
+    <div class="col-lg-7">
+        <div class="glass-card p-5 h-100">
+            <h3 class="text-white mb-2 fw-bold" style="font-family: 'Outfit', sans-serif;">Send a Message</h3>
+            <p class="text-secondary small mb-4">Complete the form details and our team will get back to you shortly.</p>
+            
+            <form action="{{ url_for('blog.contact') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <!-- Name Field -->
+                <div class="mb-4">
+                    <label for="name" class="form-label text-secondary small fw-semibold">Your Name *</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-dark border-secondary border-opacity-50 text-secondary" style="border-right: none;">
+                            <i class="bi bi-person-fill"></i>
+                        </span>
+                        <input type="text" class="form-control form-glass text-white" style="border-left: none;" id="name" name="name" placeholder="John Doe" required autofocus>
+                    </div>
+                </div>
+
+                <!-- Email Field -->
+                <div class="mb-4">
+                    <label for="email" class="form-label text-secondary small fw-semibold">Email Address *</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-dark border-secondary border-opacity-50 text-secondary" style="border-right: none;">
+                            <i class="bi bi-envelope-fill"></i>
+                        </span>
+                        <input type="email" class="form-control form-glass text-white" style="border-left: none;" id="email" name="email" placeholder="john@example.com" required>
+                    </div>
+                </div>
+
+                <!-- Subject Field -->
+                <div class="mb-4">
+                    <label for="subject" class="form-label text-secondary small fw-semibold">Subject *</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-dark border-secondary border-opacity-50 text-secondary" style="border-right: none;">
+                            <i class="bi bi-chat-left-text-fill"></i>
+                        </span>
+                        <select class="form-select form-glass text-white" style="border-left: none; background-color: var(--bg-dark);" id="subject" name="subject" required>
+                            <option value="" disabled selected>Select a subject topic...</option>
+                            <option value="General Inquiry">General Inquiry</option>
+                            <option value="Feedback & Suggestions">Feedback & Suggestions</option>
+                            <option value="Technical Support">Technical Support</option>
+                            <option value="Partnership / Business">Partnership & Business</option>
+                            <option value="Other">Other Inquiry</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Message Field -->
+                <div class="mb-4">
+                    <label for="message" class="form-label text-secondary small fw-semibold">Message *</label>
+                    <textarea class="form-control form-glass text-white" id="message" name="message" rows="6" placeholder="Write your message details here..." required></textarea>
+                </div>
+                
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-premium w-100 py-3 mt-2">
+                    <i class="bi bi-send-fill me-1"></i> Send Message
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const catBtn = document.getElementById('btn-mascot-cat');
+        const dogBtn = document.getElementById('btn-mascot-dog');
+        const catImg = document.getElementById('mascot-image-cat');
+        const dogImg = document.getElementById('mascot-image-dog');
+        
+        const mName = document.getElementById('mascot-name');
+        const mRole = document.getElementById('mascot-role');
+        const mDesc = document.getElementById('mascot-desc');
+        
+        const mascots = {
+            cat: {
+                name: 'Luna',
+                role: 'Chief Napping Officer',
+                desc: 'Likes keyboards, warm sunbeams, and stepping on the return key during code commits.',
+                imgEl: catImg,
+                btnEl: catBtn
+            },
+            dog: {
+                name: 'Milo',
+                role: 'VP of Morale',
+                desc: 'Likes chasing tennis balls, attending debugging standups, and demanding belly rubs.',
+                imgEl: dogImg,
+                btnEl: dogBtn
+            }
+        };
+        
+        let currentType = 'cat';
+        let autoPlayTimer = null;
+        
+        function switchMascot(type) {
+            if (type === currentType) return;
+            
+            const current = mascots[currentType];
+            const next = mascots[type];
+            
+            // Fade out current image
+            current.imgEl.style.opacity = '0';
+            current.imgEl.style.transform = 'scale(0.9)';
+            current.btnEl.classList.remove('active');
+            current.btnEl.style.backgroundColor = 'transparent';
+            current.btnEl.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+            
+            // Fade in next image
+            next.imgEl.style.opacity = '1';
+            next.imgEl.style.transform = 'scale(1)';
+            next.btnEl.classList.add('active');
+            next.btnEl.style.backgroundColor = 'rgba(99, 102, 241, 0.2)';
+            next.btnEl.style.borderColor = 'rgba(99, 102, 241, 0.3)';
+            
+            // Text transition
+            mName.style.opacity = '0';
+            mRole.style.opacity = '0';
+            mDesc.style.opacity = '0';
+            
+            setTimeout(() => {
+                mName.textContent = next.name;
+                mRole.textContent = next.role;
+                mDesc.textContent = next.desc;
+                
+                mName.style.opacity = '1';
+                mRole.style.opacity = '1';
+                mDesc.style.opacity = '1';
+            }, 250);
+            
+            currentType = type;
+        }
+        
+        // Transitions setup
+        mName.style.transition = 'opacity 0.25s ease';
+        mRole.style.transition = 'opacity 0.25s ease';
+        mDesc.style.transition = 'opacity 0.25s ease';
+        
+        catBtn.style.transition = 'all 0.3s ease';
+        dogBtn.style.transition = 'all 0.3s ease';
+        
+        catBtn.addEventListener('click', () => {
+            resetTimer();
+            switchMascot('cat');
+        });
+        dogBtn.addEventListener('click', () => {
+            resetTimer();
+            switchMascot('dog');
+        });
+        
+        function startTimer() {
+            autoPlayTimer = setInterval(() => {
+                const nextType = currentType === 'cat' ? 'dog' : 'cat';
+                switchMascot(nextType);
+            }, 5000);
+        }
+        
+        function resetTimer() {
+            clearInterval(autoPlayTimer);
+            startTimer();
+        }
+        
+        startTimer();
+    });
+</script>
+{% endblock %}

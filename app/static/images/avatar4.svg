@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" rx="20" fill="#080711"/>
+  <path d="M 30 25 Q 50 20 70 25 Q 70 55 50 78 Q 30 55 30 25 Z" fill="none" stroke="#f59e0b" stroke-width="3"/>
+  <text x="50" y="55" font-family="Courier New, monospace" font-weight="900" font-size="32" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">&lt;/&gt;</text>
+</svg>

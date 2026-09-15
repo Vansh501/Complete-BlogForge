@@ -1,0 +1,59 @@
+{% extends "admin/base.html" %}
+
+{% block admin_content %}
+<div class="glass-card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <h5 class="text-white mb-0 fw-bold"><i class="bi bi-file-earmark-post text-primary me-2"></i>Post Moderation Feed</h5>
+        <a href="{{ url_for('blog.create_post') }}" class="btn btn-sm btn-premium px-3"><i class="bi bi-plus-circle me-1"></i> New Article</a>
+    </div>
+
+    {% if posts %}
+        <div class="table-responsive">
+            <table class="table table-dark table-hover table-borderless align-middle mb-0" style="background: transparent;">
+                <thead>
+                    <tr class="text-secondary border-bottom border-secondary border-opacity-25" style="font-size: 0.85rem;">
+                        <th scope="col">ID</th>
+                        <th scope="col">Title</th>
+                        <th scope="col">Author</th>
+                        <th scope="col">Category</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Created At</th>
+                        <th scope="col" class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for post in posts %}
+                        <tr class="border-bottom border-secondary border-opacity-10">
+                            <td class="text-secondary">{{ post.id }}</td>
+                            <td>
+                                <a href="{{ url_for('blog.post_detail', slug=post.slug) }}" class="text-white fw-semibold text-decoration-none hover-white">{{ post.title }}</a>
+                            </td>
+                            <td class="text-light">{{ post.author.username }}</td>
+                            <td class="text-muted">{{ post.category.name if post.category else 'Uncategorized' }}</td>
+                            <td>
+                                <span class="badge {% if post.status.lower() == 'draft' %}bg-warning text-dark{% else %}bg-primary{% endif %}" style="font-size: 0.75rem;">{{ post.status }}</span>
+                            </td>
+                            <td class="text-muted small">{{ post.created_at | strftime('%b %d, %Y') }}</td>
+                            <td class="text-end">
+                                <div class="d-inline-flex gap-2">
+                                    <a href="{{ url_for('blog.post_detail', slug=post.slug) }}" class="btn btn-sm btn-outline-premium px-2.5 py-1.5" style="font-size: 0.8rem;">
+                                        <i class="bi bi-eye"></i> View
+                                    </a>
+                                    <!-- Only allow delete via admin control -->
+                                    <form action="{{ url_for('blog.delete_post', id=post.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to permanently delete this post?');">
+                                        <button type="submit" class="btn btn-sm btn-danger px-2.5 py-1.5" style="border-radius: 8px; font-size: 0.8rem;">
+                                            <i class="bi bi-trash-fill"></i> Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-muted small mb-0">No posts written yet on AetherBlog.</p>
+    {% endif %}
+</div>
+{% endblock %}

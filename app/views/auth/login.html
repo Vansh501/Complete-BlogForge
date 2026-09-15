@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: calc(100vh - 180px);">
+    <div class="col-md-5">
+        <div class="glass-card p-5 fade-in">
+            <div class="text-center mb-4">
+                <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle mb-3" style="width: 60px; height: 60px;">
+                    <i class="bi bi-shield-lock-fill fs-2 text-primary"></i>
+                </div>
+                <h2 class="mb-1 text-white">Welcome Back</h2>
+                <p class="text-muted small">Sign in to your account to manage posts</p>
+            </div>
+            
+            <form action="{{ url_for('auth.login', next=request.args.get('next', '')) }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <!-- Username/Email Field -->
+                <div class="mb-3">
+                    <label for="login_credential" class="form-label text-secondary small">Username or Email</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-dark border-secondary text-secondary" style="border-right: none;">
+                            <i class="bi bi-person-fill"></i>
+                        </span>
+                        <input type="text" class="form-control form-glass" style="border-left: none;" id="login_credential" name="login_credential" placeholder="Enter username or email" required autofocus>
+                    </div>
+                </div>
+                
+                <!-- Password Field -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <label for="password" class="form-label text-secondary small">Password</label>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-text bg-dark border-secondary text-secondary" style="border-right: none;">
+                            <i class="bi bi-key-fill"></i>
+                        </span>
+                        <input type="password" class="form-control form-glass" style="border-left: none; border-right: none;" id="password" name="password" placeholder="Enter password" required>
+                        <span class="input-group-text bg-dark border-secondary text-secondary" style="border-left: none; cursor: pointer; transition: all 0.2s;" id="togglePassword">
+                            <i class="bi bi-eye-slash-fill" id="togglePasswordIcon"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        const togglePassword = document.getElementById('togglePassword');
+                        const passwordInput = document.getElementById('password');
+                        const icon = document.getElementById('togglePasswordIcon');
+                        
+                        if (togglePassword && passwordInput && icon) {
+                            togglePassword.addEventListener('click', () => {
+                                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                                passwordInput.setAttribute('type', type);
+                                
+                                if (type === 'password') {
+                                    icon.classList.remove('bi-eye-fill');
+                                    icon.classList.add('bi-eye-slash-fill');
+                                    icon.style.color = '';
+                                } else {
+                                    icon.classList.remove('bi-eye-slash-fill');
+                                    icon.classList.add('bi-eye-fill');
+                                    icon.style.color = 'var(--accent-cyan)';
+                                }
+                            });
+                        }
+                    });
+                </script>
+                
+                <!-- Remember Me Checkbox -->
+                <div class="mb-4 form-check">
+                    <input type="checkbox" class="form-check-input bg-dark border-secondary" id="remember" name="remember">
+                    <label class="form-check-label text-secondary small" for="remember">Keep me logged in</label>
+                </div>
+                
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-premium w-100 py-2.5 mb-3">
+                    <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
+                </button>
+            </form>
+            
+            <div class="text-center mt-3">
+                <span class="text-secondary small">Don't have an account? </span>
+                <a href="{{ url_for('auth.register') }}" class="text-decoration-none small text-primary fw-semibold">Sign Up</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

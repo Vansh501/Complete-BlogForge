@@ -1,0 +1,59 @@
+{% extends "admin/base.html" %}
+
+{% block admin_content %}
+<div class="row justify-content-center">
+    <div class="col-md-7 fade-in">
+        <a href="{{ url_for('admin.manage_banners') }}" class="text-decoration-none text-secondary small d-inline-flex align-items-center mb-4 hover-white">
+            <i class="bi bi-arrow-left me-2"></i> Back to Banners
+        </a>
+
+        <div class="glass-card p-5">
+            <h5 class="text-white mb-4 fw-bold"><i class="bi bi-pencil-square text-primary me-2"></i>Edit Banner</h5>
+            
+            <form action="{{ url_for('admin.edit_banner', id=banner.id) }}" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                    <label for="title" class="form-label text-secondary small fw-semibold">Banner Title / Heading *</label>
+                    <input type="text" class="form-control form-glass text-white" id="title" name="title" value="{{ banner.title }}" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="subtitle" class="form-label text-secondary small fw-semibold">Subtitle Description</label>
+                    <input type="text" class="form-control form-glass text-white" id="subtitle" name="subtitle" value="{{ banner.subtitle or '' }}">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-secondary small fw-semibold d-block">Current Banner Image</label>
+                    <img src="{{ banner.image_url }}" alt="{{ banner.title }}" class="rounded mb-2" style="width: 160px; height: 90px; object-fit: cover; border: 1px solid var(--border-color);">
+                    <label for="banner_image_file" class="form-label text-secondary small fw-semibold d-block">Change Banner Image (Optional)</label>
+                    <input type="file" class="form-control form-glass text-white" id="banner_image_file" name="banner_image_file" accept="image/*">
+                </div>
+
+                <div class="mb-3">
+                    <label for="button_text" class="form-label text-secondary small fw-semibold">Button Action Text</label>
+                    <input type="text" class="form-control form-glass text-white" id="button_text" name="button_text" value="{{ banner.button_text or '' }}" placeholder="e.g. Get Started">
+                </div>
+
+                <div class="mb-3">
+                    <label for="link_url" class="form-label text-secondary small fw-semibold">Button Call-to-Action URL</label>
+                    <input type="url" class="form-control form-glass text-white" id="link_url" name="link_url" value="{{ banner.link_url or '' }}" placeholder="e.g. https://google.com/">
+                </div>
+
+                <div class="mb-3">
+                    <label for="display_order" class="form-label text-secondary small fw-semibold">Display Order</label>
+                    <input type="number" class="form-control form-glass text-white" id="display_order" name="display_order" value="{{ banner.display_order }}" min="0" required>
+                </div>
+
+                <div class="mb-4 form-check">
+                    <input type="checkbox" class="form-check-input bg-dark border-secondary" id="active" name="active" {% if banner.active %}checked{% endif %}>
+                    <label class="form-check-label text-secondary small" for="active">Banner is active</label>
+                </div>
+
+                <button type="submit" class="btn btn-premium w-100 py-2.5">
+                    <i class="bi bi-check2-circle-fill me-1"></i> Save Changes
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
